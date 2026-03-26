@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Distributor — Dashboard | Dolfin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+        }
+
+        .nav-pill {
+            border-radius: 10px;
+        }
+
+        .card {
+            border: 0;
+        }
+
+        .muted-xs {
+            font-size: .82rem;
+            color: #6c757d;
+        }
+
+        .kpi-card {
+            transition: transform 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+
+            <!-- Sidebar -->
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+
+                <!-- Welcome Banner -->
+                <div class="card shadow-sm mb-3 border-start border-success border-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">Welcome back, <span id="welcomeName">Distributor</span>! 👋</h5>
+                                <p class="text-muted small mb-0">Here's what's happening with your retail orders today
+                                </p>
+                            </div>
+                            <button class="btn btn-outline-danger btn-sm" onclick="seedDemoData()">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reset Demo Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">New Orders</div>
+                                        <div class="fs-3 fw-bold" id="kpiNewOrders">0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-primary bg-opacity-10 text-primary">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </div>
+                                </div>
+                                <div class="muted-xs">Awaiting confirmation</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">Active Deliveries</div>
+                                        <div class="fs-3 fw-bold" id="kpiActiveDelivery">0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-warning bg-opacity-10 text-warning">
+                                        <i class="bi bi-truck"></i>
+                                    </div>
+                                </div>
+                                <div class="muted-xs">In transit to retailers</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">Pending Invoices</div>
+                                        <div class="fs-3 fw-bold" id="kpiPendingInvoice">0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-danger bg-opacity-10 text-danger">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                    </div>
+                                </div>
+                                <div class="muted-xs">Unpaid invoices</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="card shadow-sm kpi-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <div class="text-muted small">Revenue (MTD)</div>
+                                        <div class="fs-3 fw-bold" id="kpiRevenue">Rp 0</div>
+                                    </div>
+                                    <div class="kpi-icon bg-success bg-opacity-10 text-success">
+                                        <i class="bi bi-graph-up-arrow"></i>
+                                    </div>
+                                </div>
+                                <div class="muted-xs">Month to date</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Section -->
+                <div class="row g-3 mb-3">
+                    <!-- Sales Trend Chart -->
+                    <div class="col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <div class="fw-semibold">Sales Trend (Last 7 Days)</div>
+                                <div class="muted-xs">Daily revenue performance</div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesTrendChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Overview -->
+                    <div class="col-md-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <div class="fw-semibold">Payment Status</div>
+                                <div class="muted-xs">Invoice breakdown</div>
+                            </div>
+                            <div class="card-body">
+                                <div style="position: relative; height: 200px;">
+                                    <canvas id="paymentChart"></canvas>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span><i class="bi bi-circle-fill text-success me-1"></i>Paid</span>
+                                        <span class="fw-bold" id="paidAmount">Rp 0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between small">
+                                        <span><i class="bi bi-circle-fill text-danger me-1"></i>Unpaid</span>
+                                        <span class="fw-bold" id="unpaidAmount">Rp 0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Tables Row -->
+                <div class="row g-3 mb-3">
+                    <!-- Top Retailers -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <div class="fw-semibold">Top Retailers</div>
+                                <div class="muted-xs">By total purchase value</div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light small">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Retailer</th>
+                                            <th class="text-center">Orders</th>
+                                            <th class="text-end">Total Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topRetailersBody">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-3">No data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white">
+                                <div class="fw-semibold">Top Products</div>
+                                <div class="muted-xs">Fast-moving items</div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light small">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Product</th>
+                                            <th class="text-center">Qty Sold</th>
+                                            <th class="text-end">Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topProductsBody">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-3">No data</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-semibold">Recent Orders</div>
+                            <div class="muted-xs">Latest orders from retail partners</div>
+                        </div>
+                        <a class="btn btn-outline-primary btn-sm" href="distributor_orders.html">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light small">
+                                <tr>
+                                    <th>Order No</th>
+                                    <th>Retailer</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Amount</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentOrdersBody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No orders yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Panels Row -->
+                <div class="row g-3">
+                    <!-- Delivery Status -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold">Delivery Status</div>
+                                    <div class="muted-xs">Track active shipments</div>
+                                </div>
+                                <a class="btn btn-outline-secondary btn-sm" href="distributor_orders.html">View All</a>
+                            </div>
+                            <div class="card-body" id="deliveryQuickPanel">
+                                <div class="text-muted small text-center py-3">No active deliveries</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Alerts -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold">Payment Alerts</div>
+                                    <div class="muted-xs">Pending payment verifications</div>
+                                </div>
+                                <a class="btn btn-outline-secondary btn-sm" href="distributor_orders.html">View All</a>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Invoice</th>
+                                                <th>Retailer</th>
+                                                <th>Status</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="paymentQuickBody">
+                                            <tr>
+                                                <td colspan="4" class="text-center text-muted py-3">No pending payments
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="muted-xs mt-2">
+                                    <i class="bi bi-info-circle me-1"></i>Click invoice to view order & verify payment
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Distributor Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = sessionStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+        document.getElementById("welcomeName").textContent = user.name || "Distributor";
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            sessionStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // DATA LOADING
+        // =========================
+        function loadJson(key, fb) {
+            try {
+                const r = localStorage.getItem(key);
+                return r ? JSON.parse(r) : fb;
+            } catch (e) {
+                return fb;
+            }
+        }
+
+        const orders = loadJson("dolfin_retail_orders", []);
+        const deliveries = loadJson("dolfin_retail_deliveries", []);
+        const payments = loadJson("dolfin_retail_payments", []);
+
+        // Debug logging
+        console.log("Dashboard Data Loaded:");
+        console.log("- Orders:", orders.length);
+        console.log("- Deliveries:", deliveries.length);
+        console.log("- Payments:", payments.length);
+
+        // =========================
+        // HELPERS
+        // =========================
+        const rupiah = (n) => "Rp " + (n || 0).toLocaleString("id-ID");
+
+        function badgeStatus(status) {
+            const map = {
+                "Dipesan": "bg-primary",
+                "Submitted": "bg-primary",
+                "Dikonfirmasi": "bg-info",
+                "Confirmed": "bg-info",
+                "Dikirim": "bg-warning text-dark",
+                "Shipped": "bg-warning text-dark",
+                "Sampai": "bg-success",
+                "Delivered": "bg-success"
+            };
+            const cls = map[status] || "bg-secondary";
+            return `<span class="badge ${cls}">${status}</span>`;
+        }
+
+        function badgePay(status) {
+            const map = {
+                "Unpaid": "bg-danger",
+                "Partial": "bg-warning text-dark",
+                "Paid": "bg-success",
+                "Lunas": "bg-success"
+            };
+            const cls = map[status] || "bg-secondary";
+            return `<span class="badge ${cls}">${status}</span>`;
+        }
+
+        // =========================
+        // RENDER FUNCTIONS
+        // =========================
+        function renderKPI() {
+            // New Orders (Dipesan/Submitted)
+            const newOrders = orders.filter(o => o.status === "Dipesan" || o.status === "Submitted").length;
+
+            // Active Deliveries (not yet Delivered)
+            const activeDeliveries = deliveries.filter(d =>
+                d.status !== "Delivered" && d.status !== "Sampai" && d.status !== "Diterima"
+            ).length;
+
+            // Pending Invoices (Unpaid)
+            const pendingInvoices = payments.filter(p => p.status === "Unpaid").length;
+
+            // Revenue MTD
+            const now = new Date();
+            const curMonth = now.toISOString().slice(0, 7); // YYYY-MM
+            const revenue = orders
+                .filter(o => o.date && o.date.startsWith(curMonth))
+                .reduce((sum, o) => sum + (o.total || 0), 0);
+
+            document.getElementById("kpiNewOrders").textContent = newOrders;
+            document.getElementById("kpiActiveDelivery").textContent = activeDeliveries;
+            document.getElementById("kpiPendingInvoice").textContent = pendingInvoices;
+            document.getElementById("kpiRevenue").textContent = rupiah(revenue);
+        }
+
+        function renderRecentOrders() {
+            const tbody = document.getElementById("recentOrdersBody");
+            tbody.innerHTML = "";
+
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No orders yet. Click "Reset Demo Data" to populate.</td></tr>';
+                return;
+            }
+
+            orders.slice(0, 5).forEach(o => {
+                const retailer = o.retailName || o.customer || "Retail Customer";
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="fw-semibold font-monospace small">${o.no}</td>
+                    <td>${retailer}</td>
+                    <td class="small">${o.date}</td>
+                    <td>${badgeStatus(o.status)}</td>
+                    <td class="text-end">${rupiah(o.total)}</td>
+                    <td><a href="distributor_order_detail.html?no=${o.no}" class="btn btn-sm btn-outline-primary">Manage</a></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderDeliveryQuick() {
+            const panel = document.getElementById("deliveryQuickPanel");
+
+            const activeDeliveries = deliveries.filter(d =>
+                d.status !== "Delivered" && d.status !== "Sampai"
+            );
+
+            if (activeDeliveries.length === 0) {
+                panel.innerHTML = '<div class="text-muted small text-center py-3">No active deliveries</div>';
+                return;
+            }
+
+            panel.innerHTML = activeDeliveries.slice(0, 3).map(d => {
+                const order = orders.find(o => o.no === d.orderNo);
+                const retailer = order ? (order.retailName || order.customer) : "Retailer";
+
+                return `
+                    <div class="p-2 border rounded bg-white mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-semibold small">${d.doNo}</div>
+                                <div class="muted-xs">
+                                    ${d.orderNo} • ${retailer}<br>
+                                    ETA: ${d.eta || d.estDate || "-"}
+                                </div>
+                            </div>
+                            ${badgeStatus(d.status)}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        function renderPaymentQuick() {
+            const tbody = document.getElementById("paymentQuickBody");
+            tbody.innerHTML = "";
+
+            const unpaidPayments = payments.filter(p => p.status === "Unpaid" || p.status === "Partial");
+
+            if (unpaidPayments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No pending payments</td></tr>';
+                return;
+            }
+
+            unpaidPayments.slice(0, 3).forEach(p => {
+                const order = orders.find(o => o.no === p.orderNo);
+                const retailer = order ? (order.retailName || order.customer) : "Retailer";
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="fw-semibold small">
+                        <a href="distributor_order_detail.html?no=${p.orderNo}" class="text-decoration-none">
+                            ${p.invoiceNo || p.invNo}
+                        </a>
+                    </td>
+                    <td class="small">${retailer}</td>
+                    <td>${badgePay(p.status)}</td>
+                    <td class="text-end">${rupiah(p.total || p.amount)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // =========================
+        // ANALYTICS FUNCTIONS
+        // =========================
+
+        const orderLines = loadJson("dolfin_retail_order_lines", {});
+        const batchInvoices = loadJson("dolfin_batch_invoices", []);
+
+        function renderSalesTrendChart() {
+            const ctx = document.getElementById('salesTrendChart');
+            if (!ctx) return;
+
+            // Get last 7 days
+            const today = new Date();
+            const labels = [];
+            const data = [];
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+
+                labels.push(date.toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }));
+
+                // Calculate revenue for this date
+                const dayRevenue = orders
+                    .filter(o => o.date === dateStr)
+                    .reduce((sum, o) => sum + (o.total || 0), 0);
+
+                data.push(dayRevenue);
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: data,
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => rupiah(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => {
+                                    if (value >= 1000000) return 'Rp ' + (value / 1000000).toFixed(1) + 'M';
+                                    if (value >= 1000) return 'Rp ' + (value / 1000).toFixed(0) + 'K';
+                                    return 'Rp ' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderPaymentChart() {
+            const ctx = document.getElementById('paymentChart');
+            if (!ctx) return;
+
+            // Combine regular payments and batch invoices
+            const allPayments = [...payments, ...batchInvoices];
+
+            const paidTotal = allPayments
+                .filter(p => p.status === 'Paid' || p.status === 'Lunas')
+                .reduce((sum, p) => sum + (p.total || p.amount || 0), 0);
+
+            const unpaidTotal = allPayments
+                .filter(p => p.status === 'Unpaid')
+                .reduce((sum, p) => sum + (p.total || p.amount || 0), 0);
+
+            document.getElementById('paidAmount').textContent = rupiah(paidTotal);
+            document.getElementById('unpaidAmount').textContent = rupiah(unpaidTotal);
+
+            // If no data, show placeholder
+            const hasData = (paidTotal > 0 || unpaidTotal > 0);
+            const chartData = hasData ? [paidTotal, unpaidTotal] : [1, 0];
+            const chartColors = hasData ? ['#198754', '#dc3545'] : ['#e0e0e0', '#f5f5f5'];
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paid', 'Unpaid'],
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartColors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            enabled: hasData,
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = rupiah(context.parsed);
+                                    const total = paidTotal + unpaidTotal;
+                                    const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTopRetailers() {
+            const tbody = document.getElementById('topRetailersBody');
+            if (!tbody) return;
+
+            // Group orders by retailer
+            const retailerStats = {};
+
+            orders.forEach(o => {
+                const retailer = o.retailName || o.customer || 'Unknown';
+                if (!retailerStats[retailer]) {
+                    retailerStats[retailer] = { name: retailer, orders: 0, total: 0 };
+                }
+                retailerStats[retailer].orders++;
+                retailerStats[retailer].total += (o.total || 0);
+            });
+
+            // Convert to array and sort by total
+            const sorted = Object.values(retailerStats)
+                .sort((a, b) => b.total - a.total)
+                .slice(0, 5);
+
+            tbody.innerHTML = '';
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No data</td></tr>';
+                return;
+            }
+
+            sorted.forEach((retailer, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-muted">${index + 1}</td>
+                    <td class="fw-semibold">${retailer.name}</td>
+                    <td class="text-center"><span class="badge bg-primary">${retailer.orders}</span></td>
+                    <td class="text-end fw-bold text-success">${rupiah(retailer.total)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderTopProducts() {
+            const tbody = document.getElementById('topProductsBody');
+            if (!tbody) return;
+
+            // Aggregate product sales
+            const productStats = {};
+
+            Object.values(orderLines).forEach(lines => {
+                lines.forEach(item => {
+                    const key = item.sku;
+                    if (!productStats[key]) {
+                        productStats[key] = {
+                            sku: item.sku,
+                            name: item.name,
+                            qty: 0,
+                            revenue: 0
+                        };
+                    }
+                    productStats[key].qty += item.qty;
+                    productStats[key].revenue += (item.qty * item.price);
+                });
+            });
+
+            // Sort by revenue
+            const sorted = Object.values(productStats)
+                .sort((a, b) => b.revenue - a.revenue)
+                .slice(0, 5);
+
+            tbody.innerHTML = '';
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No data</td></tr>';
+                return;
+            }
+
+            sorted.forEach((product, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-muted">${index + 1}</td>
+                    <td>
+                        <div class="fw-semibold small">${product.name}</div>
+                        <div class="muted-xs">${product.sku}</div>
+                    </td>
+                    <td class="text-center"><span class="badge bg-info">${product.qty}</span></td>
+                    <td class="text-end fw-bold text-success">${rupiah(product.revenue)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // =========================
+        // SEED DEMO DATA
+        // =========================
+        function seedDemoData() {
+            if (!confirm("This will reset all data and create new demo data. Continue?")) return;
+
+            // 1. ORDERS (More comprehensive data)
+            const dummyOrders = [
+                // Batch 1: Toko Berkah Abadi (2 orders - DELIVERED)
+                { no: "ORD-2026-001", retailName: "Toko Berkah Abadi", date: "2026-01-10", status: "Sampai", total: 750000, dist: "Distributor Current", customer: "Toko Berkah Abadi", batchInvoiceNo: "INV/2026/BATCH-001" },
+                { no: "ORD-2026-002", retailName: "Toko Berkah Abadi", date: "2026-01-09", status: "Sampai", total: 2450000, dist: "Distributor Current", customer: "Toko Berkah Abadi", batchInvoiceNo: "INV/2026/BATCH-001" },
+
+                // Batch 2: Warung Madura 24J (3 orders - DELIVERED)
+                { no: "ORD-2026-005", retailName: "Warung Madura 24J", date: "2026-01-08", status: "Sampai", total: 1200000, dist: "Distributor Current", customer: "Warung Madura 24J", batchInvoiceNo: "INV/2026/BATCH-002" },
+                { no: "ORD-2026-006", retailName: "Warung Madura 24J", date: "2026-01-07", status: "Sampai", total: 3400000, dist: "Distributor Current", customer: "Warung Madura 24J", batchInvoiceNo: "INV/2026/BATCH-002" },
+                { no: "ORD-2026-007", retailName: "Warung Madura 24J", date: "2026-01-06", status: "Sampai", total: 890000, dist: "Distributor Current", customer: "Warung Madura 24J", batchInvoiceNo: "INV/2026/BATCH-002" },
+
+                // Batch 3: Minimarket Bintang (2 orders - DELIVERED & PAID)
+                { no: "ORD-2026-008", retailName: "Minimarket Bintang", date: "2026-01-05", status: "Sampai", total: 5600000, dist: "Distributor Current", customer: "Minimarket Bintang", batchInvoiceNo: "INV/2026/BATCH-003", paymentStatus: "Paid" },
+                { no: "ORD-2026-009", retailName: "Minimarket Bintang", date: "2026-01-04", status: "Sampai", total: 2100000, dist: "Distributor Current", customer: "Minimarket Bintang", batchInvoiceNo: "INV/2026/BATCH-003", paymentStatus: "Paid" },
+
+                // Single orders (not in batch)
+                { no: "ORD-2026-003", retailName: "Kopontren Sejahtera", date: "2026-01-08", status: "Dikirim", total: 1250000, dist: "Distributor Current", customer: "Kopontren Sejahtera" },
+                { no: "ORD-2026-004", retailName: "Toko Sumber Rezeki", date: "2026-01-05", status: "Sampai", total: 980000, dist: "Distributor Current", customer: "Toko Sumber Rezeki" },
+
+                // New orders (ready to be delivered, then batched)
+                { no: "ORD-2026-010", retailName: "Toko Makmur Jaya", date: "2026-01-11", status: "Sampai", total: 1500000, dist: "Distributor Current", customer: "Toko Makmur Jaya" },
+                { no: "ORD-2026-011", retailName: "Toko Makmur Jaya", date: "2026-01-11", status: "Sampai", total: 2300000, dist: "Distributor Current", customer: "Toko Makmur Jaya" },
+            ];
+
+            // 2. ORDER LINES
+            const dummyLines = {
+                "ORD-2026-001": [
+                    { sku: "MILK-001", name: "SGM Eksplor 1+ Madu 900g", qty: 12, price: 105000 },
+                    { sku: "DIAP-001", name: "MamyPoko Pants Standar L 30", qty: 8, price: 65000 }
+                ],
+                "ORD-2026-002": [
+                    { sku: "MILK-002", name: "Dancow 1+ Vanilla 800g", qty: 20, price: 112000 },
+                    { sku: "FOOD-001", name: "Promina Bubur Bayi 6+ Pisang", qty: 10, price: 14500 }
+                ],
+                "ORD-2026-003": [
+                    { sku: "BATH-001", name: "Zwitsal Baby Bath Natural 200ml", qty: 24, price: 21000 },
+                    { sku: "DIAP-002", name: "Merries Pants Good Skin M 34", qty: 40, price: 68000 },
+                    { sku: "FOOD-003", name: "Milna Biskuit Bayi Original", qty: 100, price: 18500 }
+                ],
+                "ORD-2026-004": [
+                    { sku: "HLTH-001", name: "Curcuma Plus Sirup 60ml", qty: 50, price: 14000 }
+                ],
+                "ORD-2026-005": [
+                    { sku: "MILK-001", name: "SGM Eksplor 1+ Madu 900g", qty: 8, price: 105000 },
+                    { sku: "DIAP-001", name: "MamyPoko Pants Standar L 30", qty: 5, price: 65000 }
+                ],
+                "ORD-2026-006": [
+                    { sku: "MILK-002", name: "Dancow 1+ Vanilla 800g", qty: 25, price: 112000 },
+                    { sku: "FOOD-001", name: "Promina Bubur Bayi 6+ Pisang", qty: 20, price: 14500 }
+                ],
+                "ORD-2026-007": [
+                    { sku: "BATH-001", name: "Zwitsal Baby Bath Natural 200ml", qty: 15, price: 21000 },
+                    { sku: "DIAP-002", name: "Merries Pants Good Skin M 34", qty: 8, price: 68000 }
+                ],
+                "ORD-2026-008": [
+                    { sku: "MILK-001", name: "SGM Eksplor 1+ Madu 900g", qty: 40, price: 105000 },
+                    { sku: "DIAP-001", name: "MamyPoko Pants Standar L 30", qty: 20, price: 65000 }
+                ],
+                "ORD-2026-009": [
+                    { sku: "FOOD-003", name: "Milna Biskuit Bayi Original", qty: 80, price: 18500 },
+                    { sku: "HLTH-001", name: "Curcuma Plus Sirup 60ml", qty: 25, price: 14000 }
+                ],
+                "ORD-2026-010": [
+                    { sku: "MILK-002", name: "Dancow 1+ Vanilla 800g", qty: 10, price: 112000 },
+                    { sku: "FOOD-001", name: "Promina Bubur Bayi 6+ Pisang", qty: 15, price: 14500 }
+                ],
+                "ORD-2026-011": [
+                    { sku: "BATH-001", name: "Zwitsal Baby Bath Natural 200ml", qty: 30, price: 21000 },
+                    { sku: "DIAP-002", name: "Merries Pants Good Skin M 34", qty: 15, price: 68000 }
+                ]
+            };
+
+            // Fix Totals
+            dummyOrders.forEach(o => {
+                const lines = dummyLines[o.no] || [];
+                const t = lines.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+                o.total = t;
+            });
+
+            // 3. DELIVERIES
+            const dummyDeliveries = [
+                {
+                    doNo: "DO-26003",
+                    orderNo: "ORD-2026-003",
+                    distributor: "Distributor Current",
+                    status: "Dikirim",
+                    eta: "2026-01-12",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-08" },
+                        { status: "Barang Keluar Gudang", date: "2026-01-09" }
+                    ]
+                },
+                {
+                    doNo: "DO-26004",
+                    orderNo: "ORD-2026-004",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-06",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-05" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-06" }
+                    ]
+                },
+                // Deliveries for Batch 1
+                {
+                    doNo: "DO-26001",
+                    orderNo: "ORD-2026-001",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-11",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-10" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-11" }
+                    ]
+                },
+                {
+                    doNo: "DO-26002",
+                    orderNo: "ORD-2026-002",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-10",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-09" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-10" }
+                    ]
+                },
+                // Deliveries for Batch 2
+                {
+                    doNo: "DO-26005",
+                    orderNo: "ORD-2026-005",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-09",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-08" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-09" }
+                    ]
+                },
+                {
+                    doNo: "DO-26006",
+                    orderNo: "ORD-2026-006",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-08",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-07" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-08" }
+                    ]
+                },
+                {
+                    doNo: "DO-26007",
+                    orderNo: "ORD-2026-007",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-07",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-06" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-07" }
+                    ]
+                },
+                // Deliveries for Batch 3
+                {
+                    doNo: "DO-26008",
+                    orderNo: "ORD-2026-008",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-06",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-05" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-06" }
+                    ]
+                },
+                {
+                    doNo: "DO-26009",
+                    orderNo: "ORD-2026-009",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-05",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-04" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-05" }
+                    ]
+                },
+                // Deliveries for new orders
+                {
+                    doNo: "DO-26010",
+                    orderNo: "ORD-2026-010",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-12",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-11" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-12" }
+                    ]
+                },
+                {
+                    doNo: "DO-26011",
+                    orderNo: "ORD-2026-011",
+                    distributor: "Distributor Current",
+                    status: "Delivered",
+                    eta: "2026-01-12",
+                    timeline: [
+                        { status: "DO Issued", date: "2026-01-11" },
+                        { status: "Diterima oleh Pelanggan", date: "2026-01-12" }
+                    ]
+                }
+            ];
+
+            // 4. PAYMENTS
+            const dummyPayments = [
+                {
+                    orderNo: "ORD-2026-003",
+                    invoiceNo: "INV/2026/003",
+                    distributor: "Distributor Current",
+                    invoiceDate: "2026-01-08",
+                    dueDate: "2026-02-08",
+                    paymentTermDays: 30,
+                    total: 5600000,
+                    paid: 0,
+                    status: "Unpaid"
+                },
+                {
+                    orderNo: "ORD-2026-004",
+                    invoiceNo: "INV/2026/004",
+                    distributor: "Distributor Current",
+                    invoiceDate: "2026-01-06",
+                    dueDate: "2026-02-06",
+                    paymentTermDays: 30,
+                    total: 1250000,
+                    paid: 1250000,
+                    status: "Paid"
+                }
+            ];
+
+            // 5. PAYMENT EVIDENCE
+            const dummyEvidence = [
+                {
+                    invoiceNo: "INV/2026/003",
+                    orderNo: "ORD-2026-003",
+                    uploadDate: "2026-01-09",
+                    status: "REPORTED",
+                    note: "Transfer BCA - Minimarket Bintang",
+                    imageData: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YwZjBmMCIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iMzAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMzMzMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5CVUtUSCBQRU1CQVlBUkFOPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNDUlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE2IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbnZvaWNlOiBJTlYvMjAyNi8wMDM8L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI1NSUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkp1bWxhaDogUnAgNC41ODAuMDAwPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNjUlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFuc2ZlciBCQ0E8L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI3NSUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjA5LTAxLTIwMjY8L3RleHQ+CiAgPHJlY3QgeD0iMzAiIHk9IjIzMCIgd2lkdGg9IjM0MCIgaGVpZ2h0PSI0MCIgZmlsbD0iIzRDQUY1MCIgcng9IjUiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjI1OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC13ZWlnaHQ9ImJvbGQiPlRSQU5TQUtTSSBCRVJIQVNJTDwvdGV4dD4KPC9zdmc+"
+                }
+            ];
+
+            // 5. BATCH INVOICES (Multiple batches with different statuses)
+            const dummyBatchInvoices = [
+                // Batch 1: Unpaid with evidence
+                {
+                    invoiceNo: "INV/2026/BATCH-001",
+                    type: "BATCH",
+                    retailer: "Toko Berkah Abadi",
+                    orderNos: ["ORD-2026-001", "ORD-2026-002"],
+                    invoiceDate: "2026-01-10",
+                    dueDate: "2026-02-10",
+                    subtotal: 3200000,
+                    tax: 352000,
+                    taxPercent: 11,
+                    total: 3552000,
+                    paid: 0,
+                    status: "Unpaid",
+                    createdAt: "2026-01-10T10:00:00.000Z"
+                },
+                // Batch 2: Unpaid, no evidence yet
+                {
+                    invoiceNo: "INV/2026/BATCH-002",
+                    type: "BATCH",
+                    retailer: "Warung Madura 24J",
+                    orderNos: ["ORD-2026-005", "ORD-2026-006", "ORD-2026-007"],
+                    invoiceDate: "2026-01-08",
+                    dueDate: "2026-02-08",
+                    subtotal: 5490000,
+                    tax: 603900,
+                    taxPercent: 11,
+                    total: 6093900,
+                    paid: 0,
+                    status: "Unpaid",
+                    createdAt: "2026-01-08T14:30:00.000Z"
+                },
+                // Batch 3: Paid
+                {
+                    invoiceNo: "INV/2026/BATCH-003",
+                    type: "BATCH",
+                    retailer: "Minimarket Bintang",
+                    orderNos: ["ORD-2026-008", "ORD-2026-009"],
+                    invoiceDate: "2026-01-05",
+                    dueDate: "2026-02-05",
+                    subtotal: 7700000,
+                    tax: 847000,
+                    taxPercent: 11,
+                    total: 8547000,
+                    paid: 8547000,
+                    status: "Paid",
+                    createdAt: "2026-01-05T09:15:00.000Z"
+                }
+            ];
+
+            // Add payment evidence for batch invoices
+            dummyEvidence.push(
+                // Evidence for Batch 1 (Unpaid - waiting verification)
+                {
+                    invoiceNo: "INV/2026/BATCH-001",
+                    orderNo: "BATCH",
+                    uploadDate: "2026-01-11",
+                    status: "REPORTED",
+                    note: "Transfer BCA - Batch Payment untuk 2 orders (Toko Berkah Abadi)",
+                    imageData: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YwZjBmMCIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iMzAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMzMzMiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5CQVRDSCBQQVLNRU5UPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNDUlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE2IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbnZvaWNlOiBJTlYvMjAyNi9CQVRDSC0wMDE8L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI1NSUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkp1bWxhaDogUnAgMy41NTIuMDAwPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNjUlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFuc2ZlciBCQ0E8L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI3NSUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjExLTAxLTIwMjY8L3RleHQ+CiAgPHJlY3QgeD0iMzAiIHk9IjIzMCIgd2lkdGg9IjM0MCIgaGVpZ2h0PSI0MCIgZmlsbD0iI0ZGQzcwMCIgcng9IjUiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjI1OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC13ZWlnaHQ9ImJvbGQiPkJBVENIIElOVk9JQ0U8L3RleHQ+Cjwvc3ZnPg=="
+                },
+                // Evidence for Batch 3 (Paid - already verified)
+                {
+                    invoiceNo: "INV/2026/BATCH-003",
+                    orderNo: "BATCH",
+                    uploadDate: "2026-01-06",
+                    status: "VERIFIED",
+                    verifiedDate: "2026-01-06",
+                    verifiedAmount: 8547000,
+                    note: "Transfer BCA - Batch Payment untuk 2 orders (Minimarket Bintang)",
+                    imageData: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2UwZjJmMSIvPgogIDx0ZXh0IHg9IjUwJSIgeT0iMzAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiMxZTdlMzQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5QQUlEPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNDUlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE2IiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbnZvaWNlOiBJTlYvMjAyNi9CQVRDSC0wMDM8L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI1NSUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkp1bWxhaDogUnAgOC41NDcuMDAwPC90ZXh0PgogIDx0ZXh0IHg9IjUwJSIgeT0iNjUlIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5UcmFuc2ZlciBCQ0E8L3RleHQ+CiAgPHRleHQgeD0iNTAlIiB5PSI3NSUiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjA2LTAxLTIwMjY8L3RleHQ+CiAgPHJlY3QgeD0iMzAiIHk9IjIzMCIgd2lkdGg9IjM0MCIgaGVpZ2h0PSI0MCIgZmlsbD0iIzRDQUY1MCIgcng9IjUiLz4KICA8dGV4dCB4PSI1MCUiIHk9IjI1OCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC13ZWlnaHQ9ImJvbGQiPlZFUklGSUVEPC90ZXh0Pgo8L3N2Zz4="
+                }
+            );
+
+            // SAVE
+            console.log("Seeding Demo Data...");
+            console.log("- Orders to save:", dummyOrders.length);
+            console.log("- Deliveries to save:", dummyDeliveries.length);
+            console.log("- Payments to save:", dummyPayments.length);
+            console.log("- Batch Invoices to save:", dummyBatchInvoices.length);
+
+            localStorage.setItem("dolfin_retail_orders", JSON.stringify(dummyOrders));
+            localStorage.setItem("dolfin_retail_order_lines", JSON.stringify(dummyLines));
+            localStorage.setItem("dolfin_retail_deliveries", JSON.stringify(dummyDeliveries));
+            localStorage.setItem("dolfin_retail_payments", JSON.stringify(dummyPayments));
+            localStorage.setItem("dolfin_payment_evidence", JSON.stringify(dummyEvidence));
+            localStorage.setItem("dolfin_retail_payment_list", JSON.stringify(dummyPayments));
+            localStorage.setItem("dolfin_batch_invoices", JSON.stringify(dummyBatchInvoices));
+
+            console.log("Data saved to localStorage!");
+            alert("Demo data successfully reset!");
+            location.reload();
+        }
+
+        // =========================
+        // INIT
+        // =========================
+        renderKPI();
+        renderRecentOrders();
+        renderDeliveryQuick();
+        renderPaymentQuick();
+
+        // Analytics
+        renderSalesTrendChart();
+        renderPaymentChart();
+        renderTopRetailers();
+        renderTopProducts();
+    </script>
+    <script src="sidebar.js"></script>
+    <script>
+        // Init Sidebar
+        new SidebarSystem('distributor', 'dashboard').render();
+    </script>
+</body>
+
+</html>
