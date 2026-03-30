@@ -155,15 +155,15 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-body">
                         <div class="stepper-wrapper">
-                            <div class="stepper-item completed">
-                                <div class="step-counter"><i class="bi bi-check"></i></div>
+                            <div class="stepper-item" id="stepOrdered">
+                                <div class="step-counter">1</div>
                                 <div class="step-name small">Dipesan</div>
                             </div>
-                            <div class="stepper-item completed">
-                                <div class="step-counter"><i class="bi bi-check"></i></div>
+                            <div class="stepper-item" id="stepConfirmed">
+                                <div class="step-counter">2</div>
                                 <div class="step-name small">Dikonfirmasi</div>
                             </div>
-                            <div class="stepper-item active" id="stepShipped">
+                            <div class="stepper-item" id="stepShipped">
                                 <div class="step-counter">3</div>
                                 <div class="step-name small">Dikirim</div>
                             </div>
@@ -478,7 +478,7 @@
             });
         }
 
-        const deliv = deliveries.find(d => d.orderNo === orderNo);
+        let deliv = deliveries.find(d => d.orderNo === orderNo);
         // Payment in 'retail_payment.html' used 'invNo' but usually we link by Order No too.
         // Let's look for payment by Order No if available, or just check related Invoice?
         // In this demo data, usually Payment object has 'orderNo' or 'invNo'.
@@ -529,6 +529,37 @@
         // MOCK LOGIC: If deliv missing but status says Shipper/Delivered, create fake one
         const statusLower = (order.status || "").toLowerCase();
 
+        // =========================
+        // UPDATE STEPPER (based on actual order status)
+        // =========================
+        (function updateStepper() {
+            const s1 = document.getElementById("stepOrdered");
+            const s2 = document.getElementById("stepConfirmed");
+            const s3 = document.getElementById("stepShipped");
+            const s4 = document.getElementById("stepReceived");
+
+            function setCompleted(el) {
+                el.className = "stepper-item completed";
+                el.querySelector(".step-counter").innerHTML = '<i class="bi bi-check"></i>';
+            }
+            function setActive(el) {
+                el.className = "stepper-item active";
+            }
+
+            if (statusLower === "dipesan") {
+                setActive(s1);
+            } else if (statusLower === "dikonfirmasi") {
+                setCompleted(s1);
+                setActive(s2);
+            } else if (statusLower === "dikirim") {
+                setCompleted(s1); setCompleted(s2);
+                setActive(s3);
+                document.getElementById("confirmReceiptContainer").style.display = "block";
+            } else if (statusLower === "sampai") {
+                setCompleted(s1); setCompleted(s2); setCompleted(s3); setCompleted(s4);
+            }
+        })();
+
         if (!deliv && (statusLower === "dikirim" || statusLower === "sampai")) {
             deliv = {
                 doNo: "DO-" + Math.floor(10000 + Math.random() * 90000),
@@ -573,19 +604,6 @@
                      <div class="muted-xs">${lastEvent.date}</div>
                  </div>
              `;
-
-            // UPDATE STEPPER
-            const st = statusLower;
-            if (st === "dikirim" || status === "Shipped") {
-                document.getElementById("stepShipped").className = "stepper-item active";
-                // Show confirm receipt button
-                document.getElementById("confirmReceiptContainer").style.display = "block";
-            } else if (st === "sampai" || status === "Delivered" || status === "Diterima") {
-                document.getElementById("stepShipped").className = "stepper-item completed";
-                document.getElementById("stepReceived").className = "stepper-item completed";
-                // Add Checkmark
-                document.getElementById("stepReceived").querySelector(".step-counter").innerHTML = '<i class="bi bi-check"></i>';
-            }
 
         } else {
             divDeliv.innerHTML = `<div class="text-center text-muted small py-3">Belum ada data pengiriman.</div>`;
