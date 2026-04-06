@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Distributor | Allocation Detail</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6f9;
+      color: #222;
+    }
+    .page {
+      padding: 16px;
+      background: white; border-radius: 10px; border: 1px solid #d9e0ea;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .title-wrap h2 {
+      margin: 0 0 6px 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .subtitle {
+      color: #6b7280;
+      font-size: 13px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      border: 1px solid #d9e0ea;
+      background: #fff;
+      color: #333;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn:hover { background: #f8f8f8; }
+    .btn-primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .btn-primary:hover { background: #1d4ed8; color: #fff; }
+    .btn-success {
+      background: #15803d;
+      border-color: #15803d;
+      color: #fff;
+    }
+    .btn-success:hover { background: #166534; color: #fff; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #d9e0ea;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
+    }
+    .card-header {
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid #d9e0ea;
+      font-weight: bold;
+    }
+    .card-body {
+      padding: 16px;
+    }
+
+    .doc-info {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 12px;
+    }
+    .info-box {
+      border: 1px solid #d9e0ea;
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: #fff;
+      min-height: 62px;
+    }
+    .info-label {
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .info-value {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-draft {
+      background: #fef08a;
+      color: #854d0e;
+    }
+    .badge-partial {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .badge-complete {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #d9e0ea;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+    thead th {
+      background: #f8fafc;
+      color: #444;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .summary-table .col-num {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .status-text {
+      font-weight: bold;
+      font-size: 12px;
+    }
+    .status-complete { color: #166534; }
+    .status-partial { color: #1e40af; }
+    .status-draft { color: #854d0e; }
+
+    .link-btn {
+      color: #2563eb;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .detail-row {
+      display: none;
+      background: #f8fafc;
+    }
+    .detail-cell {
+      padding: 0 !important;
+      border-bottom: 1px solid #d9e0ea !important;
+    }
+    .detail-wrap {
+      padding: 16px;
+      border-top: 1px solid #d9e0ea;
+      background: #f8fafc;
+    }
+
+    .detail-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .detail-title {
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .mini-summary {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .mini-box {
+      border: 1px solid #d9e0ea;
+      background: #fff;
+      border-radius: 6px;
+      padding: 10px 12px;
+      min-width: 120px;
+    }
+    .mini-box .label {
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      font-weight: 700;
+    }
+    .mini-box .value {
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .table-scroll-wrapper {
+      max-height: 250px;
+      overflow-y: auto;
+      overflow-x: auto;
+      border: 1px solid #d9e0ea;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .allocation-table {
+      width: 100%;
+      min-width: 600px;
+    }
+    
+    .allocation-table thead th {
+      position: sticky;
+      top: 0;
+      background-color: #f8fafc;
+      z-index: 2;
+      box-shadow: 0 1px 0 #d9e0ea; /* alternative to border for sticky */
+    }
+
+    .allocation-table th:nth-child(1),
+    .allocation-table td:nth-child(1) { width: 80px; text-align: center; }
+    .allocation-table th:nth-child(5),
+    .allocation-table td:nth-child(5) { width: 100px; text-align: right; }
+    .allocation-table th:nth-child(6),
+    .allocation-table td:nth-child(6) { width: 180px; text-align: center; }
+    .allocation-table th:nth-child(7),
+    .allocation-table td:nth-child(7) { width: 120px; text-align: right; }
+
+    .qty-wrap {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 6px;
+      gap: 4px;
+    }
+    .qty-btn {
+      width: 40px;
+      height: 34px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 18px;
+      line-height: 1;
+      font-weight: bold;
+    }
+    .qty-minus {
+      background: #ef4444;
+    }
+    .qty-plus {
+      background: #2563eb;
+    }
+    .qty-input {
+      width: 82px;
+      height: 34px;
+      border: 1px solid #d9e0ea;
+      background: #f0f0f0;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 18px;
+      color: #555;
+      padding: 0 6px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+
+    @media (max-width: 1100px) {
+      .doc-info {
+        grid-template-columns: repeat(3, minmax(120px, 1fr));
+      }
+    }
+    @media (max-width: 760px) {
+      .doc-info {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+      }
+      th, td {
+        font-size: 12px;
+        padding: 8px;
+      }
+      .qty-input {
+        width: 62px;
+        font-size: 16px;
+      }
+      .qty-btn {
+        width: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+    <!-- Topbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid px-3">
+            <a class="navbar-brand fw-bold" href="distributor_dashboard.html">Dolfin</a>
+            <span class="navbar-text text-white-50 small d-none d-md-inline">Distributor Portal</span>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        id="userBtn">User</button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userInfo">-</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="index.html">Ganti Portal</a></li>
+                        <li><button class="dropdown-item text-danger" id="btnLogout">Logout</button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-3">
+        <div class="row g-3">
+            <!-- Sidebar -->
+            <div class="col-lg-2" id="sidebar-container"></div>
+
+            <!-- Main -->
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0 text-success fw-bold"><i class="bi bi-box-seam me-2"></i>Allocation Detail</h4>
+                </div>
+  <div class="page shadow-sm">
+    <div class="toolbar">
+      <div class="title-wrap">
+        <h2>Allocation Detail</h2>
+        <div class="subtitle">Document-level allocation for production result vs customer demand</div>
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="window.location.href='distributor_Allocation.html'">Back to List</button>
+        <button class="btn">Auto Allocate All</button>
+        <button class="btn">Reset</button>
+        <button class="btn btn-primary">Save Draft</button>
+        <button class="btn btn-success">Confirm Allocation</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Allocation Information</div>
+      <div class="card-body">
+        <div class="doc-info">
+          <div class="info-box">
+            <div class="info-label">Allocation No</div>
+            <div class="info-value">ALLOC-20260330-AM-001</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">Allocation Date</div>
+            <input type="date" class="info-value" style="width:100%;border:none;outline:none;background:transparent;padding:0;" value="2026-03-30" />
+          </div>
+          <div class="info-box">
+            <div class="info-label">Delivery Date</div>
+            <input type="date" class="info-value" style="width:100%;border:none;outline:none;background:transparent;padding:0;" value="2026-03-30" />
+          </div>
+          <div class="info-box">
+            <div class="info-label">Slot</div>
+            <div class="info-value">AM</div>
+          </div>
+          <div class="info-box">
+            <div class="info-label">Status</div>
+            <div class="info-value"><span class="badge badge-partial">NOT FULL ALLOCATED</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Item Summary</div>
+      <div class="card-body" style="padding:0;">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Item Code</th>
+              <th>Item Name</th>
+              <th class="col-num">Total SO</th>
+              <th class="col-num">Actual Prod</th>
+              <th class="col-num">Allocated</th>
+              <th class="col-num">Remaining</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-target="detail-row-1">
+              <td>BRD-001</td>
+              <td>Roti A</td>
+              <td class="col-num" data-total-so="150">150</td>
+              <td class="col-num" data-actual="135">135</td>
+              <td class="col-num allocated-total">135</td>
+              <td class="col-num remaining-total">0</td>
+              <td><span class="status-text status-partial">Not Full Allocated</span></td>
+              <td><button class="link-btn toggle-btn" type="button">Expand</button></td>
+            </tr>
+            <tr class="detail-row" id="detail-row-1">
+              <td class="detail-cell" colspan="8">
+                <div class="detail-wrap">
+                  <div class="detail-head">
+                    <div class="detail-title">Butter Croissant - Customer Allocation</div>
+                    <div class="btn-group">
+                      <button class="btn btn-sm auto-priority" type="button">Auto by Priority</button>
+                      <button class="btn btn-sm">Reset Item</button>
+                    </div>
+                  </div>
+
+                  <div class="mini-summary">
+                    <div class="mini-box">
+                      <div class="label">Total SO</div>
+                      <div class="value item-total-so">150</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Actual Production</div>
+                      <div class="value item-actual-prod">135</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Allocated</div>
+                      <div class="value item-allocated">135</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Remaining</div>
+                      <div class="value item-remaining">0</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Status</div>
+                      <div class="value item-status">Not Full Allocated</div>
+                    </div>
+                  </div>
+
+                  <div class="table-scroll-wrapper">
+                  <table class="allocation-table">
+                    <thead>
+                      <tr>
+                        <th>Priority</th>
+                        <th>SO No</th>
+                        <th>Store</th>
+                        <th>Customer</th>
+                        <th>Qty SO</th>
+                        <th>Qty Allocated</th>
+                        <th>Unfilled</th>
+                      </tr>
+                    </thead>
+                    <tbody class="alloc-body">
+                      <tr>
+                        <td>1</td>
+                        <td>SO-0001</td>
+                        <td>Store A</td>
+                        <td>Customer A</td>
+                        <td class="qty-so">40</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="40" value="40" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">0</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>SO-0002</td>
+                        <td>Store B</td>
+                        <td>Customer B</td>
+                        <td class="qty-so">30</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="30" value="30" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">0</td>
+                      </tr>
+                      <tr>
+                        <td>3</td>
+                        <td>SO-0003</td>
+                        <td>Store C</td>
+                        <td>Customer C</td>
+                        <td class="qty-so">25</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="25" value="25" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">0</td>
+                      </tr>
+                      <tr>
+                        <td>4</td>
+                        <td>SO-0004</td>
+                        <td>Store D</td>
+                        <td>Customer D</td>
+                        <td class="qty-so">20</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="20" value="20" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">0</td>
+                      </tr>
+                      <tr>
+                        <td>5</td>
+                        <td>SO-0005</td>
+                        <td>Store E</td>
+                        <td>Customer E</td>
+                        <td class="qty-so">35</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="35" value="20" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">15</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  </div>
+                  <div class="hint">Qty allocated cannot exceed Qty SO per row, and total allocation cannot exceed Actual Production.</div>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-target="detail-row-2">
+              <td>BRD-002</td>
+              <td>Roti B</td>
+              <td class="col-num" data-total-so="200">200</td>
+              <td class="col-num" data-actual="200">200</td>
+              <td class="col-num allocated-total">200</td>
+              <td class="col-num remaining-total">0</td>
+              <td><span class="status-text status-complete">Full Allocated</span></td>
+              <td><button class="link-btn toggle-btn" type="button">Expand</button></td>
+            </tr>
+            <tr class="detail-row" id="detail-row-2">
+              <td class="detail-cell" colspan="8">
+                <div class="detail-wrap">
+                  <div class="detail-head">
+                    <div class="detail-title">Almond Croissant - Customer Allocation</div>
+                  </div>
+                  <div class="mini-summary">
+                    <div class="mini-box">
+                      <div class="label">Total SO</div>
+                      <div class="value item-total-so">200</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Actual Production</div>
+                      <div class="value item-actual-prod">200</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Allocated</div>
+                      <div class="value item-allocated">200</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Remaining</div>
+                      <div class="value item-remaining">0</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Status</div>
+                      <div class="value item-status">Full Allocated</div>
+                    </div>
+                  </div>
+                  <div class="table-scroll-wrapper">
+                  <table class="allocation-table">
+                    <thead>
+                      <tr>
+                        <th>Priority</th>
+                        <th>SO No</th>
+                        <th>Store</th>
+                        <th>Customer</th>
+                        <th>Qty SO</th>
+                        <th>Qty Allocated</th>
+                        <th>Unfilled</th>
+                      </tr>
+                    </thead>
+                    <tbody class="alloc-body">
+                      <tr>
+                        <td>1</td>
+                        <td>SO-0010</td>
+                        <td>Store F</td>
+                        <td>Customer F</td>
+                        <td class="qty-so">120</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="120" value="120" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">0</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>SO-0011</td>
+                        <td>Store G</td>
+                        <td>Customer G</td>
+                        <td class="qty-so">80</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="80" value="80" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">0</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            <tr data-target="detail-row-3">
+              <td>BRD-003</td>
+              <td>Roti C</td>
+              <td class="col-num" data-total-so="90">90</td>
+              <td class="col-num" data-actual="70">70</td>
+              <td class="col-num allocated-total">70</td>
+              <td class="col-num remaining-total">0</td>
+              <td><span class="status-text status-partial">Not Full Allocated</span></td>
+              <td><button class="link-btn toggle-btn" type="button">Expand</button></td>
+            </tr>
+            <tr class="detail-row" id="detail-row-3">
+              <td class="detail-cell" colspan="8">
+                <div class="detail-wrap">
+                  <div class="detail-head">
+                    <div class="detail-title">Pain Au Chocolat - Customer Allocation</div>
+                  </div>
+                  <div class="mini-summary">
+                    <div class="mini-box">
+                      <div class="label">Total SO</div>
+                      <div class="value item-total-so">90</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Actual Production</div>
+                      <div class="value item-actual-prod">70</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Allocated</div>
+                      <div class="value item-allocated">70</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Remaining</div>
+                      <div class="value item-remaining">0</div>
+                    </div>
+                    <div class="mini-box">
+                      <div class="label">Status</div>
+                      <div class="value item-status">Not Full Allocated</div>
+                    </div>
+                  </div>
+                  <div class="table-scroll-wrapper">
+                  <table class="allocation-table">
+                    <thead>
+                      <tr>
+                        <th>Priority</th>
+                        <th>SO No</th>
+                        <th>Store</th>
+                        <th>Customer</th>
+                        <th>Qty SO</th>
+                        <th>Qty Allocated</th>
+                        <th>Unfilled</th>
+                      </tr>
+                    </thead>
+                    <tbody class="alloc-body">
+                      <tr>
+                        <td>1</td>
+                        <td>SO-0015</td>
+                        <td>Store H</td>
+                        <td>Customer H</td>
+                        <td class="qty-so">50</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="50" value="50" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">0</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>SO-0016</td>
+                        <td>Store I</td>
+                        <td>Customer I</td>
+                        <td class="qty-so">40</td>
+                        <td>
+                          <div class="qty-wrap">
+                            <button class="qty-btn qty-minus" type="button">-</button>
+                            <input class="qty-input" type="number" min="0" max="40" value="20" />
+                            <button class="qty-btn qty-plus" type="button">+</button>
+                          </div>
+                        </td>
+                        <td class="unfilled">20</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function clamp(value, min, max) {
+      value = isNaN(value) ? 0 : value;
+      if (value < min) return min;
+      if (value > max) return max;
+      return value;
+    }
+
+    function updateDetail(detailRow) {
+      const allocBody = detailRow.querySelector('.alloc-body');
+      const inputs = allocBody.querySelectorAll('.qty-input');
+      const qtySOs = allocBody.querySelectorAll('.qty-so');
+      const unfilledEls = allocBody.querySelectorAll('.unfilled');
+
+      let allocated = 0;
+      let totalSO = 0;
+
+      inputs.forEach((input, idx) => {
+        const rowSO = parseInt(qtySOs[idx].textContent, 10) || 0;
+        let val = parseInt(input.value, 10);
+        val = Math.max(0, val); // Only prevent negative, no max ceiling
+        input.value = val;
+        allocated += val;
+        totalSO += rowSO;
+        unfilledEls[idx].textContent = rowSO - val;
+      });
+
+      const summaryRow = detailRow.previousElementSibling;
+      const actualProd = parseInt(summaryRow.querySelector('[data-actual]').textContent, 10) || 0;
+      // We allow allocation to exceed actualProd during editing, so the user doesn't feel the input is 'frozen'.
+      // The remaining will just go negative, letting them know they need to rebalance.
+
+      allocated = 0;
+      inputs.forEach((input) => allocated += parseInt(input.value, 10) || 0);
+
+      const remaining = actualProd - allocated;
+      const status = allocated >= totalSO ? 'Full Allocated' : 'Not Full Allocated';
+
+      summaryRow.querySelector('.allocated-total').textContent = allocated;
+      const remSummary = summaryRow.querySelector('.remaining-total');
+      remSummary.textContent = remaining;
+      remSummary.style.color = remaining < 0 ? '#ef4444' : '';
+      
+      const statusEl = summaryRow.querySelector('.status-text');
+      statusEl.textContent = status;
+      statusEl.className = 'status-text ' + (status === 'Full Allocated' ? 'status-complete' : 'status-partial');
+
+      detailRow.querySelector('.item-total-so').textContent = totalSO;
+      detailRow.querySelector('.item-actual-prod').textContent = actualProd;
+      detailRow.querySelector('.item-allocated').textContent = allocated;
+      const remDetail = detailRow.querySelector('.item-remaining');
+      remDetail.textContent = remaining;
+      remDetail.style.color = remaining < 0 ? '#ef4444' : '';
+      detailRow.querySelector('.item-status').textContent = status;
+    }
+
+    function bindQtyHandlers(detailRow) {
+      detailRow.querySelectorAll('.qty-minus').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const input = this.parentElement.querySelector('.qty-input');
+          input.value = Math.max(0, (parseInt(input.value, 10) || 0) - 1);
+          updateDetail(detailRow);
+        });
+      });
+
+      detailRow.querySelectorAll('.qty-plus').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const input = this.parentElement.querySelector('.qty-input');
+          input.value = (parseInt(input.value, 10) || 0) + 1;
+          updateDetail(detailRow);
+        });
+      });
+
+      detailRow.querySelectorAll('.qty-input').forEach(input => {
+        input.addEventListener('input', function() {
+          updateDetail(detailRow);
+        });
+      });
+
+      const autoBtn = detailRow.querySelector('.auto-priority');
+      if (autoBtn) {
+        autoBtn.addEventListener('click', function() {
+          const summaryRow = detailRow.previousElementSibling;
+          let actual = parseInt(summaryRow.querySelector('[data-actual]').textContent, 10) || 0;
+          const rows = detailRow.querySelectorAll('.alloc-body tr');
+          rows.forEach(row => {
+            const so = parseInt(row.querySelector('.qty-so').textContent, 10) || 0;
+            const input = row.querySelector('.qty-input');
+            const alloc = Math.min(so, actual);
+            input.value = alloc;
+            actual -= alloc;
+          });
+          updateDetail(detailRow);
+        });
+      }
+    }
+
+    document.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const row = this.closest('tr');
+        const targetId = row.getAttribute('data-target');
+        const detailRow = document.getElementById(targetId);
+        const isOpen = detailRow.style.display === 'table-row';
+        detailRow.style.display = isOpen ? 'none' : 'table-row';
+        this.textContent = isOpen ? 'Expand' : 'Collapse';
+      });
+    });
+
+    document.querySelectorAll('.detail-row').forEach(detailRow => {
+      bindQtyHandlers(detailRow);
+      updateDetail(detailRow);
+    });
+  </script>
+
+  </div>
+                <div class="text-center text-muted small mt-4 mb-2">
+                    © 2026 Dolfin — Distributor Portal
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="sidebar.js"></script>
+
+    <script>
+        // =========================
+        // SESSION GUARD
+        // =========================
+        const sess = sessionStorage.getItem("dolfin_user");
+        if (!sess) window.location.href = "login.html?role=distributor";
+        const user = JSON.parse(sess);
+
+        document.getElementById("userBtn").textContent = user.name || "User";
+        document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
+
+        document.getElementById("btnLogout").addEventListener("click", () => {
+            sessionStorage.removeItem("dolfin_user");
+            window.location.href = "index.html";
+        });
+
+        // =========================
+        // SIDEBAR INJECTION
+        // =========================
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar = new SidebarSystem("distributor", "allocation");
+            sidebar.render();
+        });
+    </script>
+</body>
+</html>
