@@ -363,7 +363,7 @@
         new SidebarSystem('admin', 'users').render();
 
         // Auth Guard
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "admin_login.html";
         const user = JSON.parse(sess);
         if (user.role !== 'admin') window.location.href = "index.html";
@@ -371,7 +371,7 @@
         document.getElementById("userBtn").textContent = user.name || "Admin";
         document.getElementById("userInfo").textContent = `${user.email} • role=admin`;
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 

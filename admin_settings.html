@@ -176,6 +176,51 @@
                     </div>
                 </div>
 
+                <!-- PO Input Deadline -->
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-white">
+                        <div class="fw-bold"><i class="bi bi-clock-history me-2"></i>PO Input Deadline</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="chkPoDeadlineEnabled" checked>
+                            <label class="form-check-label" for="chkPoDeadlineEnabled">
+                                <strong>Aktifkan Batas Input PO</strong>
+                                <div class="small text-muted">Jika nonaktif, PO bisa diinput kapan saja tanpa batasan waktu</div>
+                            </label>
+                        </div>
+                        <div id="poDeadlineFields">
+                        <p class="text-muted small mb-3">
+                            Batasi kapan PO bisa diinput berdasarkan <em>receipt date</em>-nya.
+                            Contoh: jika batas = <strong>2 hari, jam 15:00</strong>, maka PO untuk receipt tgl 7 hanya bisa dibuat sampai tgl 5 pukul 15:00.
+                        </p>
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Batas Hari Sebelum Receipt Date</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="inputPoDeadlineDays" value="2" min="0" max="30">
+                                    <span class="input-group-text">hari</span>
+                                </div>
+                                <div class="form-text">0 = hari yang sama dengan receipt date</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Jam Batas Input PO</label>
+                                <div class="input-group">
+                                    <input type="time" class="form-control" id="inputPoDeadlineTime" value="15:00">
+                                </div>
+                                <div class="form-text">Waktu cutoff pada hari batas tersebut</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-info small mb-0 py-2">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    <span id="poDeadlinePreview">PO untuk receipt tgl 7 harus dibuat paling lambat tgl 5 pukul 15:00</span>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- System Settings -->
                 <div class="card shadow-sm mt-4">
                     <div class="card-header bg-white">
@@ -280,7 +325,7 @@
         new SidebarSystem('admin', 'settings').render();
 
         // Auth Guard
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "admin_login.html";
         const user = JSON.parse(sess);
         if (user.role !== 'admin') window.location.href = "index.html";
@@ -288,7 +333,7 @@
         document.getElementById("userBtn").textContent = user.name || "Admin";
         document.getElementById("userInfo").textContent = `${user.email} • role=admin`;
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
@@ -323,7 +368,10 @@
                 maintenanceMode: false,
                 emailNotif: true,
                 autoVerify: false,
-                debugMode: false
+                debugMode: false,
+                poDeadlineEnabled: true,
+                poDeadlineDays: 2,
+                poDeadlineTime: '15:00'
             };
         }
 
@@ -348,6 +396,12 @@
         document.getElementById('region4').checked = settings.regions.semarang;
         document.getElementById('region5').checked = settings.regions.medan;
 
+        document.getElementById('chkPoDeadlineEnabled').checked = settings.poDeadlineEnabled ?? true;
+        document.getElementById('inputPoDeadlineDays').value = settings.poDeadlineDays ?? 2;
+        document.getElementById('inputPoDeadlineTime').value = settings.poDeadlineTime ?? '15:00';
+        togglePoDeadlineFields();
+        updatePoDeadlinePreview();
+
         document.getElementById('chkMaintenanceMode').checked = settings.maintenanceMode;
         document.getElementById('chkEmailNotif').checked = settings.emailNotif;
         document.getElementById('chkAutoVerify').checked = settings.autoVerify;
@@ -370,6 +424,9 @@
                     semarang: document.getElementById('region4').checked,
                     medan: document.getElementById('region5').checked
                 },
+                poDeadlineEnabled: document.getElementById('chkPoDeadlineEnabled').checked,
+                poDeadlineDays: parseInt(document.getElementById('inputPoDeadlineDays').value),
+                poDeadlineTime: document.getElementById('inputPoDeadlineTime').value,
                 maintenanceMode: document.getElementById('chkMaintenanceMode').checked,
                 emailNotif: document.getElementById('chkEmailNotif').checked,
                 autoVerify: document.getElementById('chkAutoVerify').checked,
@@ -379,6 +436,27 @@
             saveSettings(newSettings);
             alert('✅ Settings saved successfully!');
         });
+
+        // PO Deadline Toggle
+        function togglePoDeadlineFields() {
+            const enabled = document.getElementById('chkPoDeadlineEnabled').checked;
+            document.getElementById('poDeadlineFields').style.opacity = enabled ? '1' : '0.4';
+            document.getElementById('poDeadlineFields').style.pointerEvents = enabled ? '' : 'none';
+        }
+        document.getElementById('chkPoDeadlineEnabled').addEventListener('change', togglePoDeadlineFields);
+
+        // PO Deadline Preview
+        function updatePoDeadlinePreview() {
+            const days = parseInt(document.getElementById('inputPoDeadlineDays').value) || 0;
+            const time = document.getElementById('inputPoDeadlineTime').value || '15:00';
+            const exampleReceiptDate = 7;
+            const deadlineDate = exampleReceiptDate - days;
+            document.getElementById('poDeadlinePreview').textContent =
+                `PO untuk receipt tgl ${exampleReceiptDate} harus dibuat paling lambat tgl ${deadlineDate} pukul ${time}`;
+        }
+
+        document.getElementById('inputPoDeadlineDays').addEventListener('input', updatePoDeadlinePreview);
+        document.getElementById('inputPoDeadlineTime').addEventListener('input', updatePoDeadlinePreview);
 
         // Data Management Actions
         document.getElementById('btnClearOrders').addEventListener('click', () => {

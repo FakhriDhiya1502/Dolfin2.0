@@ -548,7 +548,7 @@
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -556,7 +556,7 @@
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
@@ -681,8 +681,8 @@
             els.btnAddRow.addEventListener('click', addManualRow);
             els.btnClearLines.addEventListener('click', clearLines);
             els.btnNew.addEventListener('click', resetForm);
-            els.btnSave.addEventListener('click', () => showBanner('Sales Order draft berhasil disimpan.', 'success'));
-            els.btnSubmit.addEventListener('click', () => showBanner('Sales Order berhasil disubmit.', 'success'));
+            els.btnSave.addEventListener('click', () => saveSO('Draft'));
+            els.btnSubmit.addEventListener('click', () => saveSO('Submitted'));
         }
 
         function onStoreChanged() {
@@ -842,6 +842,40 @@
         function generateSoNo() {
             const n = Math.floor(Math.random() * 9000) + 1000;
             return `SO-202604-${n}`;
+        }
+
+        function saveSO(status) {
+            const soNo = els.soNo.value;
+            if (!els.storeSelect.value) { showBanner('Store wajib dipilih.', 'error'); return; }
+            if (!els.deliveryDate.value) { showBanner('Delivery Date wajib diisi.', 'error'); return; }
+            if (!state.lines.length) { showBanner('Minimal 1 item harus diisi.', 'error'); return; }
+
+            const storeObj = stores.find(s => s.code === els.storeSelect.value);
+            const soDoc = {
+                soNo,
+                soDate: els.soDate.value,
+                deliveryDate: els.deliveryDate.value,
+                slot: els.orderSlot.value,
+                soType: els.soType.value,
+                storeCode: els.storeSelect.value,
+                storeName: storeObj ? storeObj.name : els.storeSelect.value,
+                customerName: els.customerName.value,
+                lines: state.lines.map(l => ({
+                    itemCode: l.itemCode,
+                    itemName: l.itemName,
+                    qty: Number(l.qty || 0),
+                    uom: l.uom || 'PCS'
+                })),
+                notes: els.notes.value,
+                status
+            };
+
+            const list = JSON.parse(localStorage.getItem('dolfin_so_list') || '[]');
+            const idx = list.findIndex(d => d.soNo === soNo);
+            if (idx >= 0) { list[idx] = soDoc; } else { list.unshift(soDoc); }
+            localStorage.setItem('dolfin_so_list', JSON.stringify(list));
+
+            showBanner(`Sales Order ${status === 'Draft' ? 'draft berhasil disimpan' : 'berhasil disubmit'}.`, 'success');
         }
 
         function resetForm() {

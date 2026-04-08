@@ -219,33 +219,7 @@
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>FCT-20260401-001</td>
-                                        <td>Toko Melati</td>
-                                        <td>PT. Melati Retail Jaya</td>
-                                        <td>Ayam Segar</td>
-                                        <td>01/04/2026 08:30</td>
-                                        <td>admin.forecast</td>
-                                        <td><span class="badge badge-active">Active</span></td>
-                                        <td style="display:flex; gap:8px;">
-                                            <button onclick="window.location.href='distributor_forecastview.html'">View</button>
-                                            <button onclick="window.location.href='distributor_forecast.html'" class="primary">Copy</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>FCT-20260331-002</td>
-                                        <td>Toko Mawar</td>
-                                        <td>PT. Mawar Niaga Abadi</td>
-                                        <td>Bebek Segar</td>
-                                        <td>31/03/2026 16:10</td>
-                                        <td>admin.forecast</td>
-                                        <td><span class="badge badge-draft">Draft</span></td>
-                                        <td style="display:flex; gap:8px;">
-                                            <button onclick="window.location.href='distributor_forecastview.html'">View</button>
-                                            <button onclick="window.location.href='distributor_forecast.html'" class="primary">Copy</button>
-                                        </td>
-                                    </tr>
+                                <tbody id="forecastBody">
                                 </tbody>
                             </table>
                         </div>
@@ -267,7 +241,7 @@
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -275,7 +249,7 @@
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
@@ -283,10 +257,41 @@
         // SIDEBAR INJECTION
         // =========================
         document.addEventListener("DOMContentLoaded", () => {
-            // Note: Menu active on 'forecast'
             const sidebar = new SidebarSystem("distributor", "forecast");
             sidebar.render();
+            renderForecastList();
         });
+
+        // =========================
+        // FORECAST LIST FROM STORAGE
+        // =========================
+        function renderForecastList() {
+            const list = JSON.parse(localStorage.getItem('dolfin_forecast_list') || '[]');
+            const tbody = document.getElementById('forecastBody');
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#6b7280;">Belum ada data forecast.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = list.map(doc => {
+                const badgeClass = doc.status === 'Active' ? 'badge-active' : 'badge-draft';
+                const updated = doc.lastUpdated
+                    ? new Date(doc.lastUpdated).toLocaleString('id-ID', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+                    : '-';
+                return `<tr>
+                    <td>${doc.docNo || '-'}</td>
+                    <td>${doc.storeName || doc.store || '-'}</td>
+                    <td>${doc.customerName || '-'}</td>
+                    <td>${doc.groupName || doc.group || '-'}</td>
+                    <td>${updated}</td>
+                    <td>${doc.lastUpdatedBy || doc.createdBy || '-'}</td>
+                    <td><span class="badge ${badgeClass}">${doc.status || 'Draft'}</span></td>
+                    <td style="display:flex;gap:8px;">
+                        <button onclick="window.location.href='distributor_forecastview.html'">View</button>
+                        <button onclick="window.location.href='distributor_forecast.html'" class="primary">Copy</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
     </script>
 </body>
 </html>

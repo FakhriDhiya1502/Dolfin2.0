@@ -360,10 +360,10 @@
       </div>
       <div class="btn-group">
         <button class="btn" onclick="window.location.href='distributor_Allocation.html'">Back to List</button>
-        <button class="btn">Auto Allocate All</button>
-        <button class="btn">Reset</button>
-        <button class="btn btn-primary">Save Draft</button>
-        <button class="btn btn-success">Confirm Allocation</button>
+        <button class="btn" id="btnAutoAll">Auto Allocate All</button>
+        <button class="btn" id="btnResetAll">Reset All</button>
+        <button class="btn btn-primary" id="btnSaveDraft">Save Draft</button>
+        <button class="btn btn-success" id="btnConfirm">Confirm Allocation</button>
       </div>
     </div>
 
@@ -373,23 +373,23 @@
         <div class="doc-info">
           <div class="info-box">
             <div class="info-label">Allocation No</div>
-            <div class="info-value">ALLOC-20260330-AM-001</div>
+            <div class="info-value" id="infoAllocNo">-</div>
           </div>
           <div class="info-box">
             <div class="info-label">Allocation Date</div>
-            <input type="date" class="info-value" style="width:100%;border:none;outline:none;background:transparent;padding:0;" value="2026-03-30" />
+            <input type="date" id="infoAllocDate" class="info-value" style="width:100%;border:none;outline:none;background:transparent;padding:0;" />
           </div>
           <div class="info-box">
             <div class="info-label">Delivery Date</div>
-            <input type="date" class="info-value" style="width:100%;border:none;outline:none;background:transparent;padding:0;" value="2026-03-30" />
+            <input type="date" id="infoDeliveryDate" class="info-value" style="width:100%;border:none;outline:none;background:transparent;padding:0;" />
           </div>
           <div class="info-box">
             <div class="info-label">Slot</div>
-            <div class="info-value">AM</div>
+            <div class="info-value" id="infoSlot">-</div>
           </div>
           <div class="info-box">
             <div class="info-label">Status</div>
-            <div class="info-value"><span class="badge badge-partial">NOT FULL ALLOCATED</span></div>
+            <div class="info-value"><span class="badge badge-draft" id="infoStatus">DRAFT</span></div>
           </div>
         </div>
       </div>
@@ -398,338 +398,21 @@
     <div class="card">
       <div class="card-header">Item Summary</div>
       <div class="card-body" style="padding:0;">
-        <table class="summary-table">
+        <table class="summary-table" id="summaryTable">
           <thead>
             <tr>
               <th>Item Code</th>
               <th>Item Name</th>
               <th class="col-num">Total SO</th>
               <th class="col-num">Actual Prod</th>
-              <th class="col-num">Allocated</th>
+              <th class="col-num">Correction</th>
               <th class="col-num">Remaining</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr data-target="detail-row-1">
-              <td>BRD-001</td>
-              <td>Roti A</td>
-              <td class="col-num" data-total-so="150">150</td>
-              <td class="col-num" data-actual="135">135</td>
-              <td class="col-num allocated-total">135</td>
-              <td class="col-num remaining-total">0</td>
-              <td><span class="status-text status-partial">Not Full Allocated</span></td>
-              <td><button class="link-btn toggle-btn" type="button">Expand</button></td>
-            </tr>
-            <tr class="detail-row" id="detail-row-1">
-              <td class="detail-cell" colspan="8">
-                <div class="detail-wrap">
-                  <div class="detail-head">
-                    <div class="detail-title">Butter Croissant - Customer Allocation</div>
-                    <div class="btn-group">
-                      <button class="btn btn-sm auto-priority" type="button">Auto by Priority</button>
-                      <button class="btn btn-sm">Reset Item</button>
-                    </div>
-                  </div>
-
-                  <div class="mini-summary">
-                    <div class="mini-box">
-                      <div class="label">Total SO</div>
-                      <div class="value item-total-so">150</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Actual Production</div>
-                      <div class="value item-actual-prod">135</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Allocated</div>
-                      <div class="value item-allocated">135</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Remaining</div>
-                      <div class="value item-remaining">0</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Status</div>
-                      <div class="value item-status">Not Full Allocated</div>
-                    </div>
-                  </div>
-
-                  <div class="table-scroll-wrapper">
-                  <table class="allocation-table">
-                    <thead>
-                      <tr>
-                        <th>Priority</th>
-                        <th>SO No</th>
-                        <th>Store</th>
-                        <th>Customer</th>
-                        <th>Qty SO</th>
-                        <th>Qty Allocated</th>
-                        <th>Unfilled</th>
-                      </tr>
-                    </thead>
-                    <tbody class="alloc-body">
-                      <tr>
-                        <td>1</td>
-                        <td>SO-0001</td>
-                        <td>Store A</td>
-                        <td>Customer A</td>
-                        <td class="qty-so">40</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="40" value="40" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">0</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>SO-0002</td>
-                        <td>Store B</td>
-                        <td>Customer B</td>
-                        <td class="qty-so">30</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="30" value="30" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">0</td>
-                      </tr>
-                      <tr>
-                        <td>3</td>
-                        <td>SO-0003</td>
-                        <td>Store C</td>
-                        <td>Customer C</td>
-                        <td class="qty-so">25</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="25" value="25" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">0</td>
-                      </tr>
-                      <tr>
-                        <td>4</td>
-                        <td>SO-0004</td>
-                        <td>Store D</td>
-                        <td>Customer D</td>
-                        <td class="qty-so">20</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="20" value="20" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">0</td>
-                      </tr>
-                      <tr>
-                        <td>5</td>
-                        <td>SO-0005</td>
-                        <td>Store E</td>
-                        <td>Customer E</td>
-                        <td class="qty-so">35</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="35" value="20" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">15</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  </div>
-                  <div class="hint">Qty allocated cannot exceed Qty SO per row, and total allocation cannot exceed Actual Production.</div>
-                </div>
-              </td>
-            </tr>
-
-            <tr data-target="detail-row-2">
-              <td>BRD-002</td>
-              <td>Roti B</td>
-              <td class="col-num" data-total-so="200">200</td>
-              <td class="col-num" data-actual="200">200</td>
-              <td class="col-num allocated-total">200</td>
-              <td class="col-num remaining-total">0</td>
-              <td><span class="status-text status-complete">Full Allocated</span></td>
-              <td><button class="link-btn toggle-btn" type="button">Expand</button></td>
-            </tr>
-            <tr class="detail-row" id="detail-row-2">
-              <td class="detail-cell" colspan="8">
-                <div class="detail-wrap">
-                  <div class="detail-head">
-                    <div class="detail-title">Almond Croissant - Customer Allocation</div>
-                  </div>
-                  <div class="mini-summary">
-                    <div class="mini-box">
-                      <div class="label">Total SO</div>
-                      <div class="value item-total-so">200</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Actual Production</div>
-                      <div class="value item-actual-prod">200</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Allocated</div>
-                      <div class="value item-allocated">200</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Remaining</div>
-                      <div class="value item-remaining">0</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Status</div>
-                      <div class="value item-status">Full Allocated</div>
-                    </div>
-                  </div>
-                  <div class="table-scroll-wrapper">
-                  <table class="allocation-table">
-                    <thead>
-                      <tr>
-                        <th>Priority</th>
-                        <th>SO No</th>
-                        <th>Store</th>
-                        <th>Customer</th>
-                        <th>Qty SO</th>
-                        <th>Qty Allocated</th>
-                        <th>Unfilled</th>
-                      </tr>
-                    </thead>
-                    <tbody class="alloc-body">
-                      <tr>
-                        <td>1</td>
-                        <td>SO-0010</td>
-                        <td>Store F</td>
-                        <td>Customer F</td>
-                        <td class="qty-so">120</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="120" value="120" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">0</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>SO-0011</td>
-                        <td>Store G</td>
-                        <td>Customer G</td>
-                        <td class="qty-so">80</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="80" value="80" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">0</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  </div>
-                </div>
-              </td>
-            </tr>
-
-            <tr data-target="detail-row-3">
-              <td>BRD-003</td>
-              <td>Roti C</td>
-              <td class="col-num" data-total-so="90">90</td>
-              <td class="col-num" data-actual="70">70</td>
-              <td class="col-num allocated-total">70</td>
-              <td class="col-num remaining-total">0</td>
-              <td><span class="status-text status-partial">Not Full Allocated</span></td>
-              <td><button class="link-btn toggle-btn" type="button">Expand</button></td>
-            </tr>
-            <tr class="detail-row" id="detail-row-3">
-              <td class="detail-cell" colspan="8">
-                <div class="detail-wrap">
-                  <div class="detail-head">
-                    <div class="detail-title">Pain Au Chocolat - Customer Allocation</div>
-                  </div>
-                  <div class="mini-summary">
-                    <div class="mini-box">
-                      <div class="label">Total SO</div>
-                      <div class="value item-total-so">90</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Actual Production</div>
-                      <div class="value item-actual-prod">70</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Allocated</div>
-                      <div class="value item-allocated">70</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Remaining</div>
-                      <div class="value item-remaining">0</div>
-                    </div>
-                    <div class="mini-box">
-                      <div class="label">Status</div>
-                      <div class="value item-status">Not Full Allocated</div>
-                    </div>
-                  </div>
-                  <div class="table-scroll-wrapper">
-                  <table class="allocation-table">
-                    <thead>
-                      <tr>
-                        <th>Priority</th>
-                        <th>SO No</th>
-                        <th>Store</th>
-                        <th>Customer</th>
-                        <th>Qty SO</th>
-                        <th>Qty Allocated</th>
-                        <th>Unfilled</th>
-                      </tr>
-                    </thead>
-                    <tbody class="alloc-body">
-                      <tr>
-                        <td>1</td>
-                        <td>SO-0015</td>
-                        <td>Store H</td>
-                        <td>Customer H</td>
-                        <td class="qty-so">50</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="50" value="50" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">0</td>
-                      </tr>
-                      <tr>
-                        <td>2</td>
-                        <td>SO-0016</td>
-                        <td>Store I</td>
-                        <td>Customer I</td>
-                        <td class="qty-so">40</td>
-                        <td>
-                          <div class="qty-wrap">
-                            <button class="qty-btn qty-minus" type="button">-</button>
-                            <input class="qty-input" type="number" min="0" max="40" value="20" />
-                            <button class="qty-btn qty-plus" type="button">+</button>
-                          </div>
-                        </td>
-                        <td class="unfilled">20</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  </div>
-                </div>
-              </td>
-            </tr>
+          <tbody id="summaryBody">
+            <tr><td colspan="8" style="text-align:center;color:#6b7280;padding:20px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -737,13 +420,7 @@
   </div>
 
   <script>
-    function clamp(value, min, max) {
-      value = isNaN(value) ? 0 : value;
-      if (value < min) return min;
-      if (value > max) return max;
-      return value;
-    }
-
+    // ========== UTILITY ==========
     function updateDetail(detailRow) {
       const allocBody = detailRow.querySelector('.alloc-body');
       const inputs = allocBody.querySelectorAll('.qty-input');
@@ -755,8 +432,7 @@
 
       inputs.forEach((input, idx) => {
         const rowSO = parseInt(qtySOs[idx].textContent, 10) || 0;
-        let val = parseInt(input.value, 10);
-        val = Math.max(0, val); // Only prevent negative, no max ceiling
+        let val = Math.max(0, parseInt(input.value, 10) || 0);
         input.value = val;
         allocated += val;
         totalSO += rowSO;
@@ -764,21 +440,15 @@
       });
 
       const summaryRow = detailRow.previousElementSibling;
-      const actualProd = parseInt(summaryRow.querySelector('[data-actual]').textContent, 10) || 0;
-      // We allow allocation to exceed actualProd during editing, so the user doesn't feel the input is 'frozen'.
-      // The remaining will just go negative, letting them know they need to rebalance.
-
-      allocated = 0;
-      inputs.forEach((input) => allocated += parseInt(input.value, 10) || 0);
-
+      const actualProd = parseInt(summaryRow.querySelector('.actual-prod-input').value, 10) || 0;
       const remaining = actualProd - allocated;
       const status = allocated >= totalSO ? 'Full Allocated' : 'Not Full Allocated';
 
-      summaryRow.querySelector('.allocated-total').textContent = allocated;
+      summaryRow.querySelector('.correction-total').textContent = allocated;
       const remSummary = summaryRow.querySelector('.remaining-total');
       remSummary.textContent = remaining;
       remSummary.style.color = remaining < 0 ? '#ef4444' : '';
-      
+
       const statusEl = summaryRow.querySelector('.status-text');
       statusEl.textContent = status;
       statusEl.className = 'status-text ' + (status === 'Full Allocated' ? 'status-complete' : 'status-partial');
@@ -792,36 +462,67 @@
       detailRow.querySelector('.item-status').textContent = status;
     }
 
+    function setQtyEnabled(detailRow, enabled) {
+      detailRow.querySelectorAll('.qty-input, .qty-btn, .auto-priority, .reset-item-btn').forEach(el => {
+        el.disabled = !enabled;
+      });
+      const hint = detailRow.querySelector('.hint');
+      if (hint) {
+        hint.textContent = enabled
+          ? 'Qty correction cannot exceed Qty SO per row, and total correction cannot exceed Actual Production.'
+          : 'Please fill in Actual Prod first before entering Qty Correction.';
+        hint.style.color = enabled ? '' : '#ef4444';
+      }
+    }
+
+    function bindActualProdHandler(summaryRow, detailRow) {
+      const input = summaryRow.querySelector('.actual-prod-input');
+
+      function onActualChange() {
+        const val = parseInt(input.value, 10) || 0;
+        setQtyEnabled(detailRow, val > 0);
+        updateDetail(detailRow);
+      }
+
+      summaryRow.querySelector('.actual-prod-minus').addEventListener('click', function () {
+        input.value = Math.max(0, (parseInt(input.value, 10) || 0) - 1);
+        onActualChange();
+      });
+      summaryRow.querySelector('.actual-prod-plus').addEventListener('click', function () {
+        input.value = (parseInt(input.value, 10) || 0) + 1;
+        onActualChange();
+      });
+      input.addEventListener('input', onActualChange);
+
+      // Set initial state
+      setQtyEnabled(detailRow, (parseInt(input.value, 10) || 0) > 0);
+    }
+
     function bindQtyHandlers(detailRow) {
       detailRow.querySelectorAll('.qty-minus').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
           const input = this.parentElement.querySelector('.qty-input');
           input.value = Math.max(0, (parseInt(input.value, 10) || 0) - 1);
           updateDetail(detailRow);
         });
       });
-
       detailRow.querySelectorAll('.qty-plus').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
           const input = this.parentElement.querySelector('.qty-input');
           input.value = (parseInt(input.value, 10) || 0) + 1;
           updateDetail(detailRow);
         });
       });
-
       detailRow.querySelectorAll('.qty-input').forEach(input => {
-        input.addEventListener('input', function() {
-          updateDetail(detailRow);
-        });
+        input.addEventListener('input', function () { updateDetail(detailRow); });
       });
 
       const autoBtn = detailRow.querySelector('.auto-priority');
       if (autoBtn) {
-        autoBtn.addEventListener('click', function() {
+        autoBtn.addEventListener('click', function () {
           const summaryRow = detailRow.previousElementSibling;
-          let actual = parseInt(summaryRow.querySelector('[data-actual]').textContent, 10) || 0;
-          const rows = detailRow.querySelectorAll('.alloc-body tr');
-          rows.forEach(row => {
+          let actual = parseInt(summaryRow.querySelector('.actual-prod-input').value, 10) || 0;
+          detailRow.querySelectorAll('.alloc-body tr').forEach(row => {
             const so = parseInt(row.querySelector('.qty-so').textContent, 10) || 0;
             const input = row.querySelector('.qty-input');
             const alloc = Math.min(so, actual);
@@ -831,23 +532,316 @@
           updateDetail(detailRow);
         });
       }
+
+      const resetBtn = detailRow.querySelector('.reset-item-btn');
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function () {
+          detailRow.querySelectorAll('.qty-input').forEach(input => { input.value = 0; });
+          updateDetail(detailRow);
+        });
+      }
     }
 
-    document.querySelectorAll('.toggle-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const row = this.closest('tr');
-        const targetId = row.getAttribute('data-target');
-        const detailRow = document.getElementById(targetId);
-        const isOpen = detailRow.style.display === 'table-row';
-        detailRow.style.display = isOpen ? 'none' : 'table-row';
-        this.textContent = isOpen ? 'Expand' : 'Collapse';
-      });
-    });
+    // ========== DYNAMIC RENDER ==========
+    /**
+     * Build SO allocation rows.
+     * rows      = item.rows (original demand rows from SO)
+     * savedMap  = keyed by soNo, value = { qtyAllocated } from savedAllocations
+     */
+    function buildSoRows(rows, savedMap) {
+      savedMap = savedMap || {};
+      return rows.map((r, i) => {
+        const saved = savedMap[r.soNo] || {};
+        const prevAlloc = saved.qtyAllocated !== undefined ? saved.qtyAllocated : 0;
+        const unfilled = r.qtySO - prevAlloc;
+        return `
+        <tr data-sono="${r.soNo}" data-customer="${r.customer}" data-store="${r.store}">
+          <td>${i + 1}</td>
+          <td>${r.soNo}</td>
+          <td>${r.store}</td>
+          <td>${r.customer}</td>
+          <td class="qty-so">${r.qtySO}</td>
+          <td>
+            <div class="qty-wrap">
+              <button class="qty-btn qty-minus" type="button">-</button>
+              <input class="qty-input" type="number" min="0" value="${prevAlloc}" />
+              <button class="qty-btn qty-plus" type="button">+</button>
+            </div>
+          </td>
+          <td class="unfilled">${unfilled}</td>
+        </tr>`;
+      }).join('');
+    }
 
-    document.querySelectorAll('.detail-row').forEach(detailRow => {
-      bindQtyHandlers(detailRow);
-      updateDetail(detailRow);
-    });
+    function renderAllocation(draft) {
+      // Populate info card
+      document.getElementById('infoAllocNo').textContent = draft.allocId || '-';
+      document.getElementById('infoAllocDate').value = draft.allocationDate || '';
+      document.getElementById('infoDeliveryDate').value = draft.deliveryDate || '';
+      document.getElementById('infoSlot').textContent = draft.slot || '-';
+
+      const tbody = document.getElementById('summaryBody');
+      tbody.innerHTML = '';
+
+      if (!draft.items || draft.items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#6b7280;padding:20px;">No items found for this allocation.</td></tr>';
+        return;
+      }
+
+      draft.items.forEach((item, idx) => {
+        const rowId = 'detail-row-' + idx;
+        const totalSO = item.totalSO || 0;
+        const actualProd = item.actualProd !== undefined ? item.actualProd : totalSO;
+
+        // Build a map from soNo → saved allocation so we can restore qty on reload
+        const savedMap = {};
+        if (item.savedAllocations && item.savedAllocations.length) {
+          item.savedAllocations.forEach(sa => { savedMap[sa.soNo] = sa; });
+          // Also refresh rows with customer/store from savedAllocations in case
+          // earlier saves preserved them better than the original SO data
+          item.rows = (item.rows || []).map(r => {
+            const sa = savedMap[r.soNo];
+            if (sa) {
+              return {
+                ...r,
+                customer: (sa.customer && sa.customer !== '-') ? sa.customer : r.customer,
+                store:    (sa.store    && sa.store    !== '-') ? sa.store    : r.store
+              };
+            }
+            return r;
+          });
+        }
+
+        // Summary row
+        const summaryTr = document.createElement('tr');
+        summaryTr.setAttribute('data-target', rowId);
+        summaryTr.innerHTML = `
+          <td>${item.itemCode}</td>
+          <td>${item.itemName}</td>
+          <td class="col-num" data-total-so="${totalSO}">${totalSO}</td>
+          <td class="col-num">
+            <div class="qty-wrap">
+              <button class="qty-btn actual-prod-minus" type="button">-</button>
+              <input class="actual-prod-input" type="number" min="0" value="${actualProd}" />
+              <button class="qty-btn actual-prod-plus" type="button">+</button>
+            </div>
+          </td>
+          <td class="col-num correction-total">0</td>
+          <td class="col-num remaining-total">${actualProd}</td>
+          <td><span class="status-text status-partial">Not Full Allocated</span></td>
+          <td><button class="link-btn toggle-btn" type="button">Expand</button></td>`;
+        tbody.appendChild(summaryTr);
+
+        // Detail row
+        const detailTr = document.createElement('tr');
+        detailTr.className = 'detail-row';
+        detailTr.id = rowId;
+        detailTr.innerHTML = `
+          <td class="detail-cell" colspan="8">
+            <div class="detail-wrap">
+              <div class="detail-head">
+                <div class="detail-title">${item.itemName} - Customer Allocation</div>
+                <div class="btn-group">
+                  <button class="btn btn-sm auto-priority" type="button">Auto by Priority</button>
+                  <button class="btn btn-sm reset-item-btn" type="button">Reset Item</button>
+                </div>
+              </div>
+              <div class="mini-summary">
+                <div class="mini-box"><div class="label">Total SO</div><div class="value item-total-so">${totalSO}</div></div>
+                <div class="mini-box"><div class="label">Actual Production</div><div class="value item-actual-prod">${actualProd}</div></div>
+                <div class="mini-box"><div class="label">Correction</div><div class="value item-allocated">0</div></div>
+                <div class="mini-box"><div class="label">Remaining</div><div class="value item-remaining">${actualProd}</div></div>
+                <div class="mini-box"><div class="label">Status</div><div class="value item-status">Not Full Allocated</div></div>
+              </div>
+              <div class="table-scroll-wrapper">
+                <table class="allocation-table">
+                  <thead>
+                    <tr>
+                      <th>Priority</th><th>SO No</th><th>Store</th><th>Customer</th>
+                      <th>Qty SO</th><th>Qty Correction</th><th>Unfilled</th>
+                    </tr>
+                  </thead>
+                  <tbody class="alloc-body">${buildSoRows(item.rows || [], savedMap)}</tbody>
+                </table>
+              </div>
+              <div class="hint">Qty correction cannot exceed Qty SO per row, and total correction cannot exceed Actual Production.</div>
+            </div>
+          </td>`;
+        tbody.appendChild(detailTr);
+
+        // Bind toggle
+        summaryTr.querySelector('.toggle-btn').addEventListener('click', function () {
+          const isOpen = detailTr.style.display === 'table-row';
+          detailTr.style.display = isOpen ? 'none' : 'table-row';
+          this.textContent = isOpen ? 'Expand' : 'Collapse';
+        });
+
+        bindActualProdHandler(summaryTr, detailTr);
+        bindQtyHandlers(detailTr);
+        updateDetail(detailTr);
+      });
+    }
+
+    // ========== COLLECT CURRENT ALLOCATION STATE ==========
+    function collectAllocationData(draft) {
+      const items = [];
+      let totalAllocated = 0;
+      let totalSO = 0;
+      let allFull = true;
+
+      document.querySelectorAll('#summaryBody .detail-row').forEach((detailRow, idx) => {
+        const summaryRow = detailRow.previousElementSibling;
+        const itemCode = summaryRow.cells[0].textContent;
+        const itemName = summaryRow.cells[1].textContent;
+        const itemTotalSO = parseInt(summaryRow.querySelector('[data-total-so]').textContent, 10) || 0;
+        const actualProd = parseInt(summaryRow.querySelector('.actual-prod-input').value, 10) || 0;
+        const allocated = parseInt(summaryRow.querySelector('.allocated-total').textContent, 10) || 0;
+
+        totalAllocated += allocated;
+        totalSO += itemTotalSO;
+        if (allocated < itemTotalSO) allFull = false;
+
+        const rows = [];
+        detailRow.querySelectorAll('.alloc-body tr').forEach(tr => {
+          rows.push({
+            soNo:         tr.dataset.sono     || tr.cells[1].textContent,
+            store:        tr.dataset.store    || tr.cells[2].textContent,
+            customer:     tr.dataset.customer || tr.cells[3].textContent,
+            qtySO:        parseInt(tr.querySelector('.qty-so').textContent, 10) || 0,
+            qtyAllocated: parseInt(tr.querySelector('.qty-input').value, 10) || 0
+          });
+        });
+
+        items.push({ itemCode, itemName, totalSO: itemTotalSO, actualProd, allocated, rows });
+      });
+
+      return { items, totalAllocated, totalSO, allFull };
+    }
+
+    // ========== UPDATE STATUS BADGE ==========
+    function setStatusBadge(status) {
+      const badge = document.getElementById('infoStatus');
+      badge.textContent = status;
+      badge.className = 'badge ' + (status === 'CONFIRMED' ? 'badge-complete' : status === 'DRAFT' ? 'badge-draft' : 'badge-partial');
+    }
+
+    // ========== STORAGE HELPERS ==========
+    function loadDraft(allocId) {
+      const raw = localStorage.getItem('dolfin_alloc_' + allocId);
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function saveDraftToStorage(draft) {
+      localStorage.setItem('dolfin_alloc_' + draft.allocId, JSON.stringify(draft));
+    }
+
+    function updateAllocationList(allocId, status, data) {
+      let list = JSON.parse(localStorage.getItem('dolfin_allocations') || '[]');
+      const idx = list.findIndex(a => a.id === allocId);
+      if (idx >= 0) {
+        list[idx].status = status;
+        list[idx].badge = status === 'CONFIRMED' ? 'badge-complete' : 'badge-draft';
+        list[idx].totalAllocated = data.totalAllocated;
+      }
+      localStorage.setItem('dolfin_allocations', JSON.stringify(list));
+    }
+
+    function lockEditing() {
+      document.querySelectorAll('#summaryBody .qty-input, #summaryBody .qty-btn, #summaryBody .actual-prod-input, #summaryBody .actual-prod-minus, #summaryBody .actual-prod-plus').forEach(el => { el.disabled = true; });
+      document.getElementById('btnSaveDraft').disabled = true;
+      document.getElementById('btnConfirm').disabled = true;
+      document.getElementById('btnAutoAll').disabled = true;
+      document.getElementById('btnResetAll').disabled = true;
+    }
+
+    // ========== INIT ==========
+    (function init() {
+      // Read allocId from URL ?id=
+      const allocId = new URLSearchParams(window.location.search).get('id');
+      if (!allocId) {
+        document.getElementById('summaryBody').innerHTML =
+          '<tr><td colspan="8" style="text-align:center;color:#ef4444;padding:20px;">No allocation ID specified. Please open from the Allocation List.</td></tr>';
+        return;
+      }
+
+      let draft;
+      try {
+        draft = loadDraft(allocId);
+        if (!draft) throw new Error('not found');
+        renderAllocation(draft);
+      } catch (e) {
+        document.getElementById('summaryBody').innerHTML =
+          `<tr><td colspan="8" style="text-align:center;color:#ef4444;padding:20px;">Allocation "${allocId}" not found.</td></tr>`;
+        return;
+      }
+
+      setStatusBadge(draft.status || 'DRAFT');
+      if (draft.status === 'CONFIRMED') {
+        lockEditing();
+        return;
+      }
+
+      // ---- Auto Allocate All ----
+      document.getElementById('btnAutoAll').addEventListener('click', function () {
+        document.querySelectorAll('#summaryBody .detail-row').forEach(detailRow => {
+          const summaryRow = detailRow.previousElementSibling;
+          let actual = parseInt(summaryRow.querySelector('.actual-prod-input').value, 10) || 0;
+          detailRow.querySelectorAll('.alloc-body tr').forEach(row => {
+            const so = parseInt(row.querySelector('.qty-so').textContent, 10) || 0;
+            const alloc = Math.min(so, actual);
+            row.querySelector('.qty-input').value = alloc;
+            actual -= alloc;
+          });
+          updateDetail(detailRow);
+        });
+      });
+
+      // ---- Reset All ----
+      document.getElementById('btnResetAll').addEventListener('click', function () {
+        document.querySelectorAll('#summaryBody .qty-input').forEach(input => { input.value = 0; });
+        document.querySelectorAll('#summaryBody .detail-row').forEach(detailRow => updateDetail(detailRow));
+      });
+
+      // ---- Save Draft ----
+      document.getElementById('btnSaveDraft').addEventListener('click', function () {
+        const data = collectAllocationData(draft);
+        // Persist qty allocated per row into draft items
+        draft.items = draft.items.map((item, i) => {
+          const col = data.items[i];
+          if (col) {
+            item.savedAllocations = col.rows; // { soNo, store, customer, qtySO, qtyAllocated }
+            item.actualProd = col.actualProd;
+          }
+          return item;
+        });
+        draft.status = 'DRAFT';
+        saveDraftToStorage(draft);
+        updateAllocationList(draft.allocId, 'DRAFT', data);
+        setStatusBadge('DRAFT');
+        alert('Draft saved successfully.');
+      });
+
+      // ---- Confirm Allocation ----
+      document.getElementById('btnConfirm').addEventListener('click', function () {
+        if (!confirm('Confirm this allocation? This action cannot be undone.')) return;
+        const data = collectAllocationData(draft);
+        draft.items = draft.items.map((item, i) => {
+          const col = data.items[i];
+          if (col) {
+            item.savedAllocations = col.rows;
+            item.actualProd = col.actualProd;
+          }
+          return item;
+        });
+        draft.status = 'CONFIRMED';
+        draft.confirmedAt = new Date().toISOString();
+        saveDraftToStorage(draft);
+        updateAllocationList(draft.allocId, 'CONFIRMED', data);
+        setStatusBadge('CONFIRMED');
+        lockEditing();
+        alert('Allocation confirmed successfully.');
+      });
+    })();
   </script>
 
   </div>
@@ -866,7 +860,7 @@
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -874,7 +868,7 @@
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 

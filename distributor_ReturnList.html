@@ -78,7 +78,6 @@
                             <h1>Return List</h1>
                             <div class="subtext">Retail membuat return berdasarkan kondisi barang aktual di toko. Distributor hanya meninjau return berdampak finansial tinggi.</div>
                         </div>
-                        <a href="distributor_ReturnAdd.html" class="btn-main text-decoration-none" id="btnAddReturn">Add Return</a>
                     </div>
 
                     <div id="roleBanner" class="alert alert-light border mb-3 small">
@@ -186,13 +185,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="sidebar.js"></script>
     <script>
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
         document.getElementById("userBtn").textContent = user.name || "User";
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
@@ -341,17 +340,10 @@
         }
 
         document.addEventListener("DOMContentLoaded", () => {
-            new SidebarSystem(user.role === "retail" ? "retail" : "distributor", user.role === "distributor" ? "return-management" : "").render();
-            const addBtn = document.getElementById("btnAddReturn");
+            new SidebarSystem("distributor", "return-management").render();
             const roleBanner = document.getElementById("roleBanner");
-            if (user.role === "distributor") {
-                addBtn.style.display = "none";
-                roleBanner.className = "alert alert-warning border mb-3 small";
-                roleBanner.textContent = "Distributor view: return creation is handled by Retail. You review only high-impact deduction returns.";
-            } else {
-                roleBanner.className = "alert alert-info border mb-3 small";
-                roleBanner.textContent = "Retail view: create return based on goods condition at store. Regular return is auto approved; deduction return will be routed to Distributor.";
-            }
+            roleBanner.className = "alert alert-warning border mb-3 small";
+            roleBanner.textContent = "Distributor view: return creation is handled by Retail. You can view and approve/reject deduction returns only.";
             renderTable(loadReturnList());
         });
 

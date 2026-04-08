@@ -85,7 +85,7 @@
                     <div class="topbar">
                         <div>
                             <h1>Add Return</h1>
-                            <div class="subtext">Retail membuat return berdasarkan kondisi barang aktual di store. Return tetap memakai GRPO final sebagai referensi dan tidak mengubah dokumen asli.</div>
+                            <div class="subtext">Retail membuat return berdasarkan kondisi barang aktual di store. Bisa dengan referensi GRPO atau manual tanpa GRPO.</div>
                         </div>
                         <a href="retail_ReturnList.html" class="btn-soft text-decoration-none">Back to List</a>
                     </div>
@@ -124,17 +124,24 @@
                                     </select>
                                 </div>
                                 <div class="field">
+                                    <label>Return Mode</label>
+                                    <select id="returnMode">
+                                        <option value="grpo">With GRPO Reference</option>
+                                        <option value="manual">Manual (No GRPO)</option>
+                                    </select>
+                                </div>
+                                <div class="field" id="grpoRefField">
                                     <label>Reference GRPO</label>
                                     <div class="lookup-row">
                                         <input type="text" id="grpoRef" placeholder="Select GRPO" readonly>
                                         <button class="btn-outline-muted" type="button" data-bs-toggle="modal" data-bs-target="#grpoModal">Lookup</button>
                                     </div>
                                 </div>
-                                <div class="field">
+                                <div class="field" id="billingRefField">
                                     <label>Billing Reference</label>
                                     <input type="text" id="billingRef" readonly placeholder="Auto from GRPO">
                                 </div>
-                                <div class="field">
+                                <div class="field" id="billingStatusField">
                                     <label>Billing Status</label>
                                     <input type="text" id="billingStatus" readonly placeholder="Loaded from billing reference">
                                 </div>
@@ -142,7 +149,7 @@
                                     <label>Workflow</label>
                                     <input type="text" id="workflowIndicator" class="readonly-box" value="Regular return will be auto approved" readonly>
                                 </div>
-                                <div class="field">
+                                <div class="field" id="grpoAmountField">
                                     <label>GRPO Total Amount</label>
                                     <input type="text" id="grpoAmount" readonly placeholder="Loaded after GRPO selection">
                                 </div>
@@ -166,7 +173,10 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-header">Return Items</div>
+                        <div class="card-header">
+                            <span>Return Items</span>
+                            <button class="btn-outline-muted" type="button" id="btnAddManualRow" style="display:none;" onclick="addManualRow()">+ Add Item</button>
+                        </div>
                         <div class="card-body">
                             <div class="table-wrap">
                                 <table id="itemTable">
@@ -174,16 +184,17 @@
                                         <tr>
                                             <th>Item Code</th>
                                             <th>Item Name</th>
-                                            <th>GRPO Qty</th>
-                                            <th>Already Returned Qty</th>
-                                            <th>Available Qty</th>
+                                            <th id="thGrpoQty">GRPO Qty</th>
+                                            <th id="thAlreadyReturned">Already Returned Qty</th>
+                                            <th id="thAvailable">Available Qty</th>
                                             <th>Return Qty</th>
                                             <th>Reason</th>
+                                            <th id="thAction" style="display:none;"></th>
                                         </tr>
                                     </thead>
                                     <tbody id="itemTableBody">
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted py-4">Select GRPO to load returnable items.</td>
+                                            <td colspan="8" class="text-center text-muted py-4">Select GRPO to load returnable items.</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -316,51 +327,120 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="sidebar.js"></script>
     <script>
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=retail";
         const user = JSON.parse(sess);
         document.getElementById("userBtn").textContent = user.name || "User";
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
-        const customers = [
-            { name: "Sunrise Bakery Mart" },
-            { name: "Golden Crust Bakery" },
-            { name: "Daily Fresh Bakery" }
-        ];
-
-        const grpoCatalog = [
+        // ── GRPO helpers ─────────────────────────────────────────────────────────
+        const DEMO_GRPO_RETURN = [
             {
-                no: "GRPO-202604-0018",
+                grpoNo: "GRPO-202604-0018",
+                grpoDate: "2026-04-03",
+                poNo: "PO-202604-0011",
+                store: "Sunrise Bakery Mart",
                 customer: "Sunrise Bakery Mart",
-                billingRef: "BILL-202604-0001",
-                billingStatus: "Draft",
                 totalQty: 215,
-                totalAmount: 3322500,
-                items: [
-                    { code: "BRD-001", name: "Butter Croissant", grpoQty: 62, returnedQty: 2, price: 18000 },
-                    { code: "BRD-007", name: "Chocolate Donut", grpoQty: 54, returnedQty: 0, price: 14500 },
-                    { code: "BRD-010", name: "Cheese Danish", grpoQty: 39, returnedQty: 1, price: 21500 },
-                    { code: "BRD-013", name: "Soft Burger Bun", grpoQty: 54, returnedQty: 4, price: 9000 }
+                status: "Closed",
+                rows: [
+                    { itemCode: "BRD-001", itemName: "Butter Croissant", qtyOrder: 62, qtyReceived: 62 },
+                    { itemCode: "BRD-007", itemName: "Chocolate Donut", qtyOrder: 54, qtyReceived: 54 },
+                    { itemCode: "BRD-010", itemName: "Cheese Danish", qtyOrder: 39, qtyReceived: 39 },
+                    { itemCode: "BRD-013", itemName: "Soft Burger Bun", qtyOrder: 60, qtyReceived: 60 }
                 ]
             },
             {
-                no: "GRPO-202604-0021",
+                grpoNo: "GRPO-202604-0021",
+                grpoDate: "2026-04-04",
+                poNo: "PO-202604-0012",
+                store: "Golden Crust Bakery",
                 customer: "Golden Crust Bakery",
-                billingRef: "BILL-202604-0002",
-                billingStatus: "Confirmed",
                 totalQty: 310,
-                totalAmount: 4975000,
-                items: [
-                    { code: "BRD-003", name: "Milk Bread", grpoQty: 120, returnedQty: 12, price: 12500 },
-                    { code: "BRD-008", name: "Sugar Donut", grpoQty: 90, returnedQty: 5, price: 11000 },
-                    { code: "BRD-011", name: "Cheese Roll", grpoQty: 100, returnedQty: 6, price: 24000 }
+                status: "Closed",
+                rows: [
+                    { itemCode: "BRD-003", itemName: "Milk Bread", qtyOrder: 120, qtyReceived: 120 },
+                    { itemCode: "BRD-008", itemName: "Sugar Donut", qtyOrder: 90, qtyReceived: 90 },
+                    { itemCode: "BRD-011", itemName: "Cheese Roll", qtyOrder: 100, qtyReceived: 100 }
                 ]
             }
         ];
+
+        // Fallback price map ketika tidak ada billing/price list di LS
+        const FALLBACK_PRICES = {
+            "BRD-001": 18000, "BRD-007": 14500, "BRD-010": 21500, "BRD-013": 9000,
+            "BRD-003": 12500, "BRD-008": 11000, "BRD-011": 24000, "BRD-002": 16000,
+            "BRD-005": 15000
+        };
+
+        function loadGrpoList() {
+            try {
+                const stored = JSON.parse(localStorage.getItem("dolfin_grpo_list") || "[]");
+                const storedNos = new Set(stored.map(g => g.grpoNo));
+                return [...stored, ...DEMO_GRPO_RETURN.filter(d => !storedNos.has(d.grpoNo))];
+            } catch(e) { return DEMO_GRPO_RETURN; }
+        }
+
+        function findBillingForGrpo(grpoNo) {
+            try {
+                const billings = JSON.parse(localStorage.getItem("dolfin_batch_invoices") || "[]");
+                return billings.find(b => (b.sourceGrpoNos || []).includes(grpoNo)) || null;
+            } catch(e) { return null; }
+        }
+
+        function getPriceMap(billing) {
+            const map = {};
+            if (!billing) return map;
+            (billing.detailRows || []).forEach(row => {
+                const price = row.slots && row.slots.length ? Number(row.slots[0].price || 0) : 0;
+                if (row.itemCode && price) map[row.itemCode] = price;
+            });
+            return map;
+        }
+
+        function calcReturnedQty(grpoNo, itemCode) {
+            try {
+                const returns = JSON.parse(localStorage.getItem("dolfin_return_list") || "[]");
+                return returns
+                    .filter(r => r.grpo === grpoNo && ["Draft","Submitted","Approved"].includes(r.status))
+                    .reduce((sum, r) => {
+                        const line = (r.lines || []).find(l => l.itemCode === itemCode);
+                        return sum + Number(line?.returnQty || 0);
+                    }, 0);
+            } catch(e) { return 0; }
+        }
+
+        function mapGrpoToReturnFormat(grpo) {
+            const billing = findBillingForGrpo(grpo.grpoNo);
+            const priceMap = { ...FALLBACK_PRICES, ...getPriceMap(billing) };
+            const items = (grpo.rows || []).map(row => {
+                const grpoQty = Number(row.qtyReceived || 0);
+                const returnedQty = calcReturnedQty(grpo.grpoNo, row.itemCode);
+                const price = priceMap[row.itemCode] || 0;
+                return { code: row.itemCode, name: row.itemName, grpoQty, returnedQty, price };
+            });
+            const totalAmount = items.reduce((s, i) => s + i.grpoQty * i.price, 0);
+            return {
+                no: grpo.grpoNo,
+                customer: grpo.store || grpo.customer || "",
+                billingRef: billing ? billing.billingNo : "-",
+                billingStatus: billing ? (billing.status || "Draft") : "-",
+                totalQty: Number(grpo.totalQty || 0),
+                totalAmount,
+                items
+            };
+        }
+
+        // Daftar customer diambil dari GRPO LS
+        function loadCustomerList() {
+            const grpos = loadGrpoList();
+            const names = [...new Set(grpos.map(g => g.store || g.customer).filter(Boolean))];
+            return names.map(n => ({ name: n }));
+        }
 
         let selectedGrpo = null;
         const LS_RETURN = "dolfin_return_list";
@@ -409,23 +489,31 @@
 
         function renderCustomerList() {
             const container = document.getElementById("customerList");
-            container.innerHTML = customers.map((customer) => `
-                <button type="button" class="list-group-item list-group-item-action" onclick="selectCustomer('${customer.name}')">${customer.name}</button>
-            `).join("");
+            const customers = loadCustomerList();
+            container.innerHTML = customers.length
+                ? customers.map((c) => `<button type="button" class="list-group-item list-group-item-action" onclick="selectCustomer('${c.name.replace(/'/g,"\\'")}'">${c.name}</button>`).join("")
+                : `<p class="text-muted small p-2">Belum ada customer dari GRPO.</p>`;
         }
 
         function renderGrpoList() {
             const body = document.getElementById("grpoList");
-            body.innerHTML = grpoCatalog.map((grpo, index) => `
+            const grpos = loadGrpoList();
+            if (!grpos.length) {
+                body.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Tidak ada GRPO.</td></tr>';
+                return;
+            }
+            body.innerHTML = grpos.map((grpo) => {
+                const mapped = mapGrpoToReturnFormat(grpo);
+                return `
                 <tr>
-                    <td>${grpo.no}</td>
-                    <td>${grpo.customer}</td>
-                    <td>${grpo.billingRef}</td>
-                    <td>${grpo.totalQty}</td>
-                    <td>${rupiah(grpo.totalAmount)}</td>
-                    <td><button class="btn-outline-muted" type="button" onclick="selectGrpo(${index})">Select</button></td>
-                </tr>
-            `).join("");
+                    <td>${mapped.no}</td>
+                    <td>${mapped.customer}</td>
+                    <td>${mapped.billingRef}</td>
+                    <td>${mapped.totalQty}</td>
+                    <td>${rupiah(mapped.totalAmount)}</td>
+                    <td><button class="btn-outline-muted" type="button" onclick="selectGrpo('${mapped.no}')">Select</button></td>
+                </tr>`;
+            }).join("");
         }
 
         function selectCustomer(name) {
@@ -433,8 +521,10 @@
             bootstrap.Modal.getInstance(document.getElementById("customerModal")).hide();
         }
 
-        function selectGrpo(index) {
-            selectedGrpo = JSON.parse(JSON.stringify(grpoCatalog[index]));
+        function selectGrpo(grpoNo) {
+            const raw = loadGrpoList().find(g => g.grpoNo === grpoNo);
+            if (!raw) return;
+            selectedGrpo = mapGrpoToReturnFormat(raw);
             document.getElementById("customerName").value = selectedGrpo.customer;
             document.getElementById("grpoRef").value = selectedGrpo.no;
             document.getElementById("billingRef").value = selectedGrpo.billingRef;
@@ -447,10 +537,43 @@
             bootstrap.Modal.getInstance(document.getElementById("grpoModal")).hide();
         }
 
+        function isManualMode() {
+            return document.getElementById("returnMode").value === "manual";
+        }
+
+        function applyModeUI() {
+            const manual = isManualMode();
+            const grpoFields = ["grpoRefField", "billingRefField", "billingStatusField", "grpoAmountField"];
+            grpoFields.forEach(id => {
+                document.getElementById(id).style.display = manual ? "none" : "";
+            });
+            document.getElementById("btnAddManualRow").style.display = manual ? "inline-block" : "none";
+            document.getElementById("thGrpoQty").style.display = manual ? "none" : "";
+            document.getElementById("thAlreadyReturned").style.display = manual ? "none" : "";
+            document.getElementById("thAvailable").style.display = manual ? "none" : "";
+            document.getElementById("thAction").style.display = manual ? "" : "none";
+
+            const infoBanner = document.getElementById("returnInfoBanner");
+            if (manual) {
+                infoBanner.innerHTML = "Mode Manual: isi item return secara manual tanpa referensi GRPO. GRPO Qty tidak diperlukan.";
+                selectedGrpo = null;
+                document.getElementById("grpoRef").value = "";
+                document.getElementById("billingRef").value = "";
+                document.getElementById("billingStatus").value = "";
+                document.getElementById("grpoAmount").value = "";
+                document.getElementById("sumGrpo").textContent = "-";
+                renderManualItems();
+            } else {
+                renderItems();
+                syncReturnTypeUI();
+            }
+            recalcSummary();
+        }
+
         function renderItems() {
             const body = document.getElementById("itemTableBody");
             if (!selectedGrpo) {
-                body.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Select GRPO to load returnable items.</td></tr>';
+                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Select GRPO to load returnable items.</td></tr>';
                 return;
             }
 
@@ -472,6 +595,7 @@
                                 <option>Others</option>
                             </select>
                         </td>
+                        <td style="display:none;"></td>
                     </tr>
                 `;
             }).join("");
@@ -482,6 +606,54 @@
                     recalcSummary();
                 });
             });
+        }
+
+        let manualRowCounter = 0;
+
+        function renderManualItems() {
+            const body = document.getElementById("itemTableBody");
+            body.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Klik "+ Add Item" untuk menambah item return manual.</td></tr>';
+            manualRowCounter = 0;
+        }
+
+        function addManualRow() {
+            const body = document.getElementById("itemTableBody");
+            // Remove placeholder row if present
+            const placeholder = body.querySelector("td[colspan]");
+            if (placeholder) placeholder.closest("tr").remove();
+
+            const idx = manualRowCounter++;
+            const tr = document.createElement("tr");
+            tr.dataset.manualIdx = idx;
+            tr.innerHTML = `
+                <td><input type="text" placeholder="Item Code" class="manual-item-code"></td>
+                <td><input type="text" placeholder="Item Name" class="manual-item-name"></td>
+                <td style="display:none;"></td>
+                <td style="display:none;"></td>
+                <td style="display:none;"></td>
+                <td><input type="number" min="0" value="0" class="return-qty manual-return-qty"></td>
+                <td>
+                    <select>
+                        <option>Damage</option>
+                        <option>Expired</option>
+                        <option>Unsold</option>
+                        <option>Others</option>
+                    </select>
+                </td>
+                <td><button type="button" onclick="removeManualRow(this)" style="background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px;">✕</button></td>
+            `;
+            body.appendChild(tr);
+            tr.querySelector(".return-qty").addEventListener("input", recalcSummary);
+        }
+
+        function removeManualRow(btn) {
+            const tr = btn.closest("tr");
+            tr.remove();
+            const body = document.getElementById("itemTableBody");
+            if (!body.querySelector("tr")) {
+                body.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Klik "+ Add Item" untuk menambah item return manual.</td></tr>';
+            }
+            recalcSummary();
         }
 
         function validateRow(input) {
@@ -495,20 +667,23 @@
         }
 
         function recalcSummary() {
+            const manual = isManualMode();
             const qtyInputs = Array.from(document.querySelectorAll(".return-qty"));
             const totalQty = qtyInputs.reduce((sum, input) => sum + Number(input.value || 0), 0);
             let totalAmount = 0;
 
-            qtyInputs.forEach((input) => {
-                const item = selectedGrpo ? selectedGrpo.items[Number(input.dataset.index)] : null;
-                if (!item) return;
-                totalAmount += Number(input.value || 0) * item.price;
-            });
+            if (!manual) {
+                qtyInputs.forEach((input) => {
+                    const item = selectedGrpo ? selectedGrpo.items[Number(input.dataset.index)] : null;
+                    if (!item) return;
+                    totalAmount += Number(input.value || 0) * item.price;
+                });
+            }
 
-            const limitAmount = selectedGrpo ? selectedGrpo.totalAmount * 0.05 : 0;
+            const limitAmount = selectedGrpo && !manual ? selectedGrpo.totalAmount * 0.05 : 0;
             const type = document.getElementById("returnType").value;
-            const overLimit = type === "Regular" && totalAmount > limitAmount;
-            const nearLimit = type === "Regular" && totalAmount > 0 && totalAmount >= limitAmount * 0.8 && !overLimit;
+            const overLimit = !manual && type === "Regular" && totalAmount > limitAmount && limitAmount > 0;
+            const nearLimit = !manual && type === "Regular" && totalAmount > 0 && totalAmount >= limitAmount * 0.8 && !overLimit && limitAmount > 0;
 
             document.getElementById("sumQty").textContent = totalQty;
             document.getElementById("sumAmount").textContent = rupiah(totalAmount);
@@ -584,8 +759,12 @@
         }
 
         function requireReferenceData() {
-            if (!document.getElementById("customerName").value || !selectedGrpo) {
-                alert("Select customer and reference GRPO first.");
+            if (!document.getElementById("customerName").value) {
+                alert("Select customer first.");
+                return false;
+            }
+            if (!isManualMode() && !selectedGrpo) {
+                alert("Select reference GRPO first, or switch to Manual mode.");
                 return false;
             }
             return true;
@@ -594,48 +773,72 @@
         function collectReturnPayload(status) {
             const summary = recalcSummary();
             const type = document.getElementById("returnType").value;
+            const manual = isManualMode();
             const rows = Array.from(document.querySelectorAll("#itemTableBody tr"));
-            const lines = rows.map((row, index) => {
-                const qtyInput = row.querySelector(".return-qty");
-                const reasonSelect = row.querySelector("select[data-index]");
-                const returnQty = Number(qtyInput?.value || 0);
-                if (!returnQty) return null;
 
-                const item = selectedGrpo.items[index];
-                return {
-                    itemCode: item.code,
-                    itemName: item.name,
-                    grpoQty: item.grpoQty,
-                    alreadyReturnedQty: item.returnedQty,
-                    availableQty: item.grpoQty - item.returnedQty,
-                    returnQty,
-                    reason: reasonSelect?.value || "Damage",
-                    price: item.price
-                };
-            }).filter(Boolean);
+            let lines;
+            if (manual) {
+                lines = rows.map((row) => {
+                    const qtyInput = row.querySelector(".manual-return-qty");
+                    const codeInput = row.querySelector(".manual-item-code");
+                    const nameInput = row.querySelector(".manual-item-name");
+                    const reasonSelect = row.querySelector("select");
+                    const returnQty = Number(qtyInput?.value || 0);
+                    if (!returnQty) return null;
+                    return {
+                        itemCode: codeInput?.value.trim() || "-",
+                        itemName: nameInput?.value.trim() || "-",
+                        grpoQty: null,
+                        alreadyReturnedQty: null,
+                        availableQty: null,
+                        returnQty,
+                        reason: reasonSelect?.value || "Damage",
+                        price: 0
+                    };
+                }).filter(Boolean);
+            } else {
+                lines = rows.map((row, index) => {
+                    const qtyInput = row.querySelector(".return-qty");
+                    const reasonSelect = row.querySelector("select[data-index]");
+                    const returnQty = Number(qtyInput?.value || 0);
+                    if (!returnQty) return null;
+                    const item = selectedGrpo.items[index];
+                    return {
+                        itemCode: item.code,
+                        itemName: item.name,
+                        grpoQty: item.grpoQty,
+                        alreadyReturnedQty: item.returnedQty,
+                        availableQty: item.grpoQty - item.returnedQty,
+                        returnQty,
+                        reason: reasonSelect?.value || "Damage",
+                        price: item.price
+                    };
+                }).filter(Boolean);
+            }
 
             return {
                 no: generateReturnNo(),
                 date: document.getElementById("returnDate").value,
                 customer: document.getElementById("customerName").value,
                 type,
-                grpo: selectedGrpo.no,
-                billingRef: selectedGrpo.billingRef,
-                billingStatus: selectedGrpo.billingStatus,
-                grpoAmount: selectedGrpo.totalAmount,
+                mode: manual ? "Manual" : "GRPO",
+                grpo: manual ? "-" : selectedGrpo.no,
+                billingRef: manual ? "-" : selectedGrpo.billingRef,
+                billingStatus: manual ? "-" : selectedGrpo.billingStatus,
+                grpoAmount: manual ? 0 : selectedGrpo.totalAmount,
                 qty: summary.totalQty,
                 amount: summary.totalAmount,
                 status,
-                financialTreatment: getAdjustmentMethod(),
-                grossBillingAmount: selectedGrpo.totalAmount,
-                netBillingAmount: Math.max(selectedGrpo.totalAmount - summary.totalAmount, 0),
-                billingImpactStatus: isBillingFinal() ? "Original Billing Locked - Credit Memo Flow" : "Direct Billing Reduction",
+                financialTreatment: manual ? "Manual Return - No GRPO Reference" : getAdjustmentMethod(),
+                grossBillingAmount: manual ? 0 : selectedGrpo.totalAmount,
+                netBillingAmount: manual ? 0 : Math.max(selectedGrpo.totalAmount - summary.totalAmount, 0),
+                billingImpactStatus: manual ? "Manual return - tidak ada GRPO reference" : (isBillingFinal() ? "Original Billing Locked - Credit Memo Flow" : "Direct Billing Reduction"),
                 by: `Retail - ${user.name || user.email || "User"}`,
                 remarks: document.getElementById("remarks").value.trim(),
                 approvalRequired: type === "Deduction",
-                creditMemoNo: isBillingFinal() ? generateCreditMemoNo() : "",
-                creditMemoDate: isBillingFinal() ? document.getElementById("returnDate").value : "",
-                creditMemoStatus: isBillingFinal() ? (status === "Draft" ? "Planned" : "Pending") : "",
+                creditMemoNo: (!manual && isBillingFinal()) ? generateCreditMemoNo() : "",
+                creditMemoDate: (!manual && isBillingFinal()) ? document.getElementById("returnDate").value : "",
+                creditMemoStatus: (!manual && isBillingFinal()) ? (status === "Draft" ? "Planned" : "Pending") : "",
                 approvalInfo: {
                     approvedBy: "",
                     approvalDate: "",
@@ -656,6 +859,7 @@
         });
 
         document.getElementById("returnType").addEventListener("change", syncReturnTypeUI);
+        document.getElementById("returnMode").addEventListener("change", applyModeUI);
         document.getElementById("btnSaveDraft").addEventListener("click", () => {
             if (!requireReferenceData()) return;
             const payload = collectReturnPayload("Draft");
@@ -677,7 +881,7 @@
                 alert("Enter at least one return qty before submit.");
                 return;
             }
-            if (summary.overLimit) {
+            if (!isManualMode() && summary.overLimit) {
                 alert("Regular return exceeds 5% limit and cannot be submitted.");
                 return;
             }

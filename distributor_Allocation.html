@@ -223,38 +223,7 @@
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="allocationTbody">
-                                    <tr>
-                                        <td>ALLOC-20260330-AM-001</td>
-                                        <td>30 Mar 2026</td>
-                                        <td>AM</td>
-                                        <td>12</td>
-                                        <td>1,250</td>
-                                        <td>1,200</td>
-                                        <td><span class="badge badge-partial">NOT FULL ALLOCATED</span></td>
-                                        <td><button onclick="window.location.href='distributor_allocation_detail_full.html'">Open</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>ALLOC-20260330-PM-001</td>
-                                        <td>30 Mar 2026</td>
-                                        <td>PM</td>
-                                        <td>10</td>
-                                        <td>980</td>
-                                        <td>980</td>
-                                        <td><span class="badge badge-complete">FULL ALLOCATED</span></td>
-                                        <td><button onclick="window.location.href='distributor_allocation_detail_full.html'">Open</button></td>
-                                    </tr>
-                                    <tr>
-                                        <td>ALLOC-20260329-AM-002</td>
-                                        <td>29 Mar 2026</td>
-                                        <td>AM</td>
-                                        <td>15</td>
-                                        <td>1,400</td>
-                                        <td>0</td>
-                                        <td><span class="badge badge-draft">DRAFT</span></td>
-                                        <td><button onclick="window.location.href='distributor_allocation_detail_full.html'">Open</button></td>
-                                    </tr>
-                                </tbody>
+                                <tbody id="allocationTbody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -275,7 +244,7 @@
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -283,7 +252,7 @@
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
@@ -297,22 +266,28 @@
             // =========================
             // LOAD DYNAMIC ALLOCATIONS
             // =========================
-            const allocations = JSON.parse(sessionStorage.getItem('dolfin_allocations') || '[]');
+            const allocations = JSON.parse(localStorage.getItem('dolfin_allocations') || '[]');
             const tbody = document.getElementById('allocationTbody');
-            allocations.forEach(alloc => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${alloc.id}</td>
-                    <td>${alloc.date}</td>
-                    <td>${alloc.slot}</td>
-                    <td>${alloc.items}</td>
-                    <td>${alloc.so}</td>
-                    <td>${alloc.actual}</td>
-                    <td><span class="badge ${alloc.badge}">${alloc.status}</span></td>
-                    <td><button onclick="window.location.href='distributor_allocation_detail_full.html'">Open</button></td>
-                `;
-                tbody.prepend(tr); // prepend to show at top
-            });
+            if (allocations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#6b7280;padding:20px;">No allocations yet. Click + New Allocation to create one.</td></tr>';
+            } else {
+                allocations.forEach(alloc => {
+                    const badgeClass = alloc.badge || 'badge-draft';
+                    const statusLabel = alloc.status || 'DRAFT';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${alloc.id}</td>
+                        <td>${alloc.date || '-'}</td>
+                        <td>${alloc.slot || '-'}</td>
+                        <td>${alloc.itemCount ?? '-'}</td>
+                        <td>${alloc.totalQtySO ?? '-'}</td>
+                        <td>${alloc.totalAllocated ?? 0}</td>
+                        <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                        <td><button onclick="window.location.href='distributor_allocation_detail_full.html?id=${alloc.id}'">Open</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
         });
     </script>
 </body>

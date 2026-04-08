@@ -73,7 +73,7 @@ new_billing = """<!DOCTYPE html>
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -81,7 +81,7 @@ new_billing = """<!DOCTYPE html>
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 

@@ -79,7 +79,7 @@ def wrap_file(path, title, active_menu="PriceList"):
             const sidebar = new SidebarSystem("admin", \"""" + active_menu + """\");
             sidebar.render();
             
-            const sess = sessionStorage.getItem("dolfin_user");
+            const sess = localStorage.getItem("dolfin_user");
             if(sess) {
                 const user = JSON.parse(sess);
                 const ub = document.getElementById("userBtn");
@@ -91,7 +91,7 @@ def wrap_file(path, title, active_menu="PriceList"):
             const blo = document.getElementById("btnLogout");
             if(blo) {
                 blo.addEventListener("click", () => {
-                    sessionStorage.removeItem("dolfin_user");
+                    localStorage.removeItem("dolfin_user");
                     window.location.href = "index.html";
                 });
             }

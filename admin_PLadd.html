@@ -369,8 +369,8 @@
                 <!-- Content injected here -->
                 <div class="page" style="max-width: 100%; margin: 0; background: transparent; padding: 0;">
                     <div class="toolbar">
-                        <button class="btn success">Save Draft</button>
-                        <button class="btn warn">Activate</button>
+                        <button class="btn success" id="btnSaveDraft">Save Draft</button>
+                        <button class="btn warn" id="btnActivate">Activate</button>
                         <button class="btn" data-bs-toggle="modal" data-bs-target="#importExcelModal">Import Excel</button>
                         <button class="btn">Copy From Existing</button>
                         <button class="btn gray" onclick="window.location.href='admin_PLList.html'">Back</button>
@@ -396,59 +396,60 @@
                             <div class="grid">
                                 <div class="field col-3">
                                     <label>Price List No</label>
-                                    <input class="readonly" type="text" value="AUTO" readonly />
+                                    <input id="inpPLNo" class="readonly" type="text" value="AUTO" readonly />
                                 </div>
                                 <div class="field col-4">
                                     <label>Price List Name</label>
-                                    <input type="text" value="Sunrise Bakery PL" />
+                                    <input id="inpPLName" type="text" value="Sunrise Bakery PL" />
                                 </div>
                                 <div class="field col-2">
                                     <label>Status</label>
-                                    <input class="readonly" type="text" value="Draft" readonly />
+                                    <input id="inpStatus" class="readonly" type="text" value="Draft" readonly />
                                 </div>
                                 <div class="field col-3">
                                     <label>Currency</label>
-                                    <select>
+                                    <select id="selCurrency">
                                         <option selected>IDR</option>
                                         <option>USD</option>
                                     </select>
                                 </div>
                                 <div class="field col-2">
                                     <label>Toko</label>
-                                    <select>
-                                        <option>-- Select Toko --</option>
-                                        <option selected>Sunrise Bakery Mart</option>
-                                        <option>Toko Thamrin</option>
+                                    <select id="selToko">
+                                        <option value="">-- Select Toko --</option>
                                     </select>
                                 </div>
                                 <div class="field col-3">
                                     <label>PT</label>
-                                    <select>
-                                        <option>-- Select PT --</option>
-                                        <option selected>PT Sunrise Jaya</option>
+                                    <select id="selPT">
+                                        <option value="">-- Select PT --</option>
+                                        <option>PT Sunrise Jaya</option>
                                         <option>PT Maju Bersama</option>
+                                        <option>PT Jaya Abadi</option>
                                     </select>
                                 </div>
                                 <div class="field col-3">
                                     <label>Konsep</label>
-                                    <select>
-                                        <option>-- Select Konsep --</option>
-                                        <option selected>General Bakery</option>
+                                    <select id="selKonsep">
+                                        <option value="">-- Select Konsep --</option>
+                                        <option>General Bakery</option>
                                         <option>Rakuni</option>
+                                        <option>Eaton</option>
+                                        <option>Ah Mei</option>
                                     </select>
                                 </div>
                                 <div class="field col-2">
                                     <label>Valid From</label>
-                                    <input type="date" value="2026-01-15" />
+                                    <input id="inpValidFrom" type="date" value="2026-01-15" />
                                 </div>
                                 <div class="field col-2">
                                     <label>Valid To</label>
-                                    <input type="date" value="2026-01-31" />
+                                    <input id="inpValidTo" type="date" value="2026-01-31" />
                                 </div>
 
                                 <div class="field col-12">
                                     <label>Remarks</label>
-                                    <textarea
+                                    <textarea id="inpRemarks"
                                         placeholder="Catatan perubahan harga, alasan revisi, atau referensi approval."></textarea>
                                 </div>
                             </div>
@@ -578,6 +579,37 @@
         </div>
     </div>
 
+    <!-- Item Picker Modal -->
+    <div class="modal fade" id="itemPickerModal" tabindex="-1" aria-labelledby="itemPickerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="itemPickerModalLabel"><i class="bi bi-search me-2"></i>Pilih Item</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <input type="text" id="itemPickerSearch" class="form-control mb-3" placeholder="Cari kode atau nama item..." autocomplete="off" />
+                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <table class="table table-hover table-sm mb-0" style="min-width: unset;">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th style="width:120px;">Item Code</th>
+                                    <th>Item Name</th>
+                                    <th style="width:80px;">UoM</th>
+                                    <th style="width:80px;" class="text-center">Pilih</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemPickerBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Import Excel Modal -->
     <div class="modal fade" id="importExcelModal" tabindex="-1" aria-labelledby="importExcelModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -607,12 +639,23 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="sidebar.js"></script>
+    <script src="billing_storage.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const sidebar = new SidebarSystem("admin", "PriceListAdd");
             sidebar.render();
 
-            const sess = sessionStorage.getItem("dolfin_user");
+            // Populate Toko dropdown from same source as Billing (DO + GRPO customers)
+            const selToko = document.getElementById("selToko");
+            const tokoList = (typeof BillingStorage !== "undefined") ? BillingStorage.getCustomerList() : [];
+            tokoList.forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                selToko.appendChild(opt);
+            });
+
+            const sess = localStorage.getItem("dolfin_user");
             if (sess) {
                 const user = JSON.parse(sess);
                 const ub = document.getElementById("userBtn");
@@ -624,40 +667,204 @@
             const blo = document.getElementById("btnLogout");
             if (blo) {
                 blo.addEventListener("click", () => {
-                    sessionStorage.removeItem("dolfin_user");
+                    localStorage.removeItem("dolfin_user");
                     window.location.href = "index.html";
                 });
             }
 
+            // ── Price List persistence helpers ───────────────────────────
+            const LS_PL = "dolfin_pl_list";
+            const params = new URLSearchParams(window.location.search);
+            const editPlNo = params.get("plNo");
+
+            const getPLList = () => JSON.parse(localStorage.getItem(LS_PL) || "[]");
+            const savePLList = (list) => localStorage.setItem(LS_PL, JSON.stringify(list));
+
+            const genPlNo = () => {
+                const list = getPLList();
+                const year = new Date().getFullYear();
+                const max = list.reduce((n, pl) => {
+                    const m = /PL-\d{4}-(\d{4})/.exec(pl.plNo || "");
+                    return m ? Math.max(n, parseInt(m[1])) : n;
+                }, 0);
+                return `PL-${year}-${String(max + 1).padStart(4, "0")}`;
+            };
+
+            const readForm = () => {
+                const rows = [];
+                tbody.querySelectorAll("tr").forEach(tr => {
+                    const tds = tr.querySelectorAll("td");
+                    const code  = tds[1]?.querySelector("input")?.value.trim() || "";
+                    const name  = tds[2]?.querySelector("input")?.value.trim() || "";
+                    const uom   = tds[3]?.textContent.trim() || "";
+                    const price = parseFloat((tds[4]?.querySelector("input")?.value || "0").replace(/,/g, "")) || 0;
+                    const notes = tds[5]?.querySelector("input")?.value.trim() || "";
+                    if (code) rows.push({ code, name, uom, price, notes });
+                });
+                return {
+                    plNo:      document.getElementById("inpPLNo").value,
+                    plName:    document.getElementById("inpPLName").value.trim(),
+                    currency:  document.getElementById("selCurrency").value,
+                    toko:      document.getElementById("selToko").value,
+                    pt:        document.getElementById("selPT").value,
+                    konsep:    document.getElementById("selKonsep").value,
+                    validFrom: document.getElementById("inpValidFrom").value,
+                    validTo:   document.getElementById("inpValidTo").value,
+                    remarks:   document.getElementById("inpRemarks").value.trim(),
+                    items:     rows,
+                };
+            };
+
+            const loadForm = (pl) => {
+                document.getElementById("inpPLNo").value       = pl.plNo;
+                document.getElementById("inpPLName").value     = pl.plName;
+                document.getElementById("inpStatus").value     = pl.status;
+                document.getElementById("selCurrency").value   = pl.currency;
+                document.getElementById("selToko").value       = pl.toko;
+                document.getElementById("selPT").value         = pl.pt;
+                document.getElementById("selKonsep").value     = pl.konsep;
+                document.getElementById("inpValidFrom").value  = pl.validFrom;
+                document.getElementById("inpValidTo").value    = pl.validTo;
+                document.getElementById("inpRemarks").value    = pl.remarks || "";
+                tbody.innerHTML = "";
+                (pl.items || []).forEach(item => addItemRow(item));
+            };
+
+            // Load existing PL if editing
+            if (editPlNo) {
+                const existing = getPLList().find(p => p.plNo === editPlNo);
+                if (existing) loadForm(existing);
+            }
+
+            document.getElementById("btnSaveDraft").addEventListener("click", () => {
+                const data = readForm();
+                if (!data.plName) { alert("Price List Name wajib diisi."); return; }
+                const list = getPLList();
+                const idx  = list.findIndex(p => p.plNo === data.plNo);
+                const pl   = idx >= 0 ? { ...list[idx], ...data } : { ...data, plNo: genPlNo(), status: "Draft" };
+                if (idx >= 0) { pl.status = pl.status === "Active" ? "Active" : "Draft"; list[idx] = pl; }
+                else list.push(pl);
+                savePLList(list);
+                document.getElementById("inpPLNo").value  = pl.plNo;
+                document.getElementById("inpStatus").value = pl.status;
+                alert(`Price List "${pl.plName}" berhasil disimpan sebagai ${pl.status}.`);
+            });
+
+            document.getElementById("btnActivate").addEventListener("click", () => {
+                const data = readForm();
+                if (!data.plName) { alert("Price List Name wajib diisi."); return; }
+                if (!data.validFrom || !data.validTo) { alert("Valid From dan Valid To wajib diisi sebelum Activate."); return; }
+                if (data.items.length === 0) { alert("Tambahkan minimal 1 item sebelum Activate."); return; }
+                const list = getPLList();
+                const idx  = list.findIndex(p => p.plNo === data.plNo);
+                const pl   = idx >= 0 ? { ...list[idx], ...data, status: "Active" } : { ...data, plNo: genPlNo(), status: "Active" };
+                if (idx >= 0) list[idx] = pl; else list.push(pl);
+                savePLList(list);
+                document.getElementById("inpPLNo").value   = pl.plNo;
+                document.getElementById("inpStatus").value = "Active";
+                alert(`Price List "${pl.plName}" berhasil di-Activate.`);
+            });
+
+            // ── Item Master ──────────────────────────────────────────────
+            const itemMaster = [
+                { code: "BRD-001", name: "Butter Croissant",   uom: "PCS"  },
+                { code: "BRD-002", name: "Almond Croissant",   uom: "PCS"  },
+                { code: "BRD-003", name: "Pain Au Chocolat",   uom: "PCS"  },
+                { code: "BRD-004", name: "Classic Baguette",   uom: "PCS"  },
+                { code: "BRD-005", name: "Whole Wheat Loaf",   uom: "LOAF" },
+                { code: "BRD-006", name: "Milk Bun",           uom: "PCS"  },
+                { code: "BRD-007", name: "Chocolate Donut",    uom: "PCS"  },
+                { code: "BRD-008", name: "Glazed Donut",       uom: "PCS"  },
+                { code: "BRD-009", name: "Cinnamon Roll",      uom: "PCS"  },
+                { code: "BRD-010", name: "Cheese Danish",      uom: "PCS"  },
+                { code: "BRD-011", name: "Raisin Danish",      uom: "PCS"  },
+                { code: "BRD-012", name: "Sourdough Loaf",     uom: "LOAF" },
+                { code: "BRD-013", name: "Soft Burger Bun",    uom: "PCS"  },
+                { code: "BRD-014", name: "Hotdog Bun",         uom: "PCS"  },
+                { code: "BRD-015", name: "Mini Palmier",       uom: "PCS"  },
+            ];
+
             const tbody = document.getElementById("tblBody");
-            const btnAddItem = document.getElementById("btnAddItem");
 
             const updateRowNumbers = () => {
-                if(!tbody) return;
+                if (!tbody) return;
                 tbody.querySelectorAll("tr").forEach((tr, index) => {
                     const tdNo = tr.querySelector(".row-no");
                     if (tdNo) tdNo.textContent = index + 1;
                 });
             };
 
-            if (btnAddItem && tbody) {
-                btnAddItem.addEventListener("click", () => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td class="center row-no"></td>
-                        <td><input type="text" value="" style="width:100px;" placeholder="Code" /></td>
-                        <td><input type="text" value="" style="width:100%;" placeholder="Item Name" /></td>
-                        <td>PCS</td>
-                        <td class="right"><input type="text" value="0.00" style="text-align:right;" /></td>
-                        <td><input type="text" /></td>
-                        <td><span class="small text-muted">-</span></td>
-                        <td class="center"><button class="btn btn-sm btn-outline-danger btn-delete"><i class="bi bi-trash"></i></button></td>
-                    `;
-                    tbody.appendChild(tr);
-                    updateRowNumbers();
-                });
-            }
+            const addItemRow = (item) => {
+                const priceVal = item.price ? Number(item.price).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0.00";
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="center row-no"></td>
+                    <td><input type="text" value="${item.code}" style="width:100px; border:none; background:transparent;" readonly /></td>
+                    <td><input type="text" value="${item.name}" style="width:100%; border:none; background:transparent;" readonly /></td>
+                    <td>${item.uom}</td>
+                    <td class="right"><input type="text" value="${priceVal}" style="text-align:right;" /></td>
+                    <td><input type="text" value="${item.notes || ""}" /></td>
+                    <td><span class="small text-muted">-</span></td>
+                    <td class="center"><button class="btn btn-sm btn-outline-danger btn-delete"><i class="bi bi-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+                updateRowNumbers();
+            };
 
+            // ── Item Picker Modal ─────────────────────────────────────────
+            const itemPickerModal = new bootstrap.Modal(document.getElementById("itemPickerModal"));
+            const itemPickerBody  = document.getElementById("itemPickerBody");
+            const itemPickerSearch = document.getElementById("itemPickerSearch");
+
+            const getUsedCodes = () => {
+                return new Set(
+                    [...tbody.querySelectorAll("tr")].map(tr => {
+                        const input = tr.querySelectorAll("td")[1]?.querySelector("input");
+                        return input ? input.value.trim() : "";
+                    }).filter(Boolean)
+                );
+            };
+
+            const renderPickerRows = (filter) => {
+                const q = (filter || "").toLowerCase();
+                const used = getUsedCodes();
+                const filtered = itemMaster
+                    .filter(i => !used.has(i.code))
+                    .filter(i => !q || i.code.toLowerCase().includes(q) || i.name.toLowerCase().includes(q));
+                itemPickerBody.innerHTML = filtered.map(i => `
+                    <tr style="cursor:pointer;" data-code="${i.code}" data-name="${i.name}" data-uom="${i.uom}">
+                        <td>${i.code}</td>
+                        <td>${i.name}</td>
+                        <td>${i.uom}</td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-primary btn-pick-item">Pilih</button>
+                        </td>
+                    </tr>
+                `).join("");
+            };
+
+            document.getElementById("btnAddItem").addEventListener("click", () => {
+                itemPickerSearch.value = "";
+                renderPickerRows("");
+                itemPickerModal.show();
+                setTimeout(() => itemPickerSearch.focus(), 300);
+            });
+
+            itemPickerSearch.addEventListener("input", () => renderPickerRows(itemPickerSearch.value));
+
+            itemPickerBody.addEventListener("click", (e) => {
+                const btn = e.target.closest(".btn-pick-item");
+                if (!btn) return;
+                const row = btn.closest("tr");
+                addItemRow({
+                    code: row.dataset.code,
+                    name: row.dataset.name,
+                    uom:  row.dataset.uom,
+                });
+                itemPickerModal.hide();
+            });
+
+            // ── Delete row ────────────────────────────────────────────────
             if (tbody) {
                 tbody.addEventListener("click", (e) => {
                     const btn = e.target.closest(".btn-delete");

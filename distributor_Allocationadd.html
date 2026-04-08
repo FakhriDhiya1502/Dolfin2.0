@@ -440,17 +440,47 @@
     </div>
 
     <script>
-        const soData = [
-            { soNo: 'SO-20260401-001', customer: 'Customer A', store: 'Store A', deliveryDate: '2026-04-01', slot: 'AM', itemCode: 'BRD-001', itemName: 'Butter Croissant', qty: 40 },
-            { soNo: 'SO-20260401-002', customer: 'Customer B', store: 'Store B', deliveryDate: '2026-04-01', slot: 'AM', itemCode: 'BRD-001', itemName: 'Butter Croissant', qty: 30 },
-            { soNo: 'SO-20260401-003', customer: 'Customer C', store: 'Store C', deliveryDate: '2026-04-01', slot: 'AM', itemCode: 'BRD-002', itemName: 'Almond Croissant', qty: 50 },
-            { soNo: 'SO-20260401-004', customer: 'Customer D', store: 'Store D', deliveryDate: '2026-04-01', slot: 'AM', itemCode: 'BRD-001', itemName: 'Butter Croissant', qty: 20 },
-            { soNo: 'SO-20260401-005', customer: 'Customer E', store: 'Store E', deliveryDate: '2026-04-01', slot: 'AM', itemCode: 'BRD-003', itemName: 'Pain Au Chocolat', qty: 60 },
-            { soNo: 'SO-20260401-006', customer: 'Customer F', store: 'Store F', deliveryDate: '2026-04-01', slot: 'AM', itemCode: 'BRD-002', itemName: 'Almond Croissant', qty: 90 },
-            { soNo: 'SO-20260401-007', customer: 'Customer G', store: 'Store G', deliveryDate: '2026-04-01', slot: 'PM', itemCode: 'BRD-001', itemName: 'Butter Croissant', qty: 70 },
-            { soNo: 'SO-20260401-008', customer: 'Customer H', store: 'Store H', deliveryDate: '2026-04-01', slot: 'PM', itemCode: 'BRD-003', itemName: 'Pain Au Chocolat', qty: 35 },
-            { soNo: 'SO-20260402-001', customer: 'Customer I', store: 'Store I', deliveryDate: '2026-04-02', slot: 'AM', itemCode: 'BRD-004', itemName: 'Classic Baguette', qty: 25 }
-        ];
+        // Master store map — single source of truth untuk lookup
+        const STORE_MAP = {
+            STR001: { name: 'Toko Melati',  customer: 'PT. Melati Retail Jaya' },
+            STR002: { name: 'Toko Mawar',   customer: 'PT. Mawar Niaga Abadi' },
+            STR003: { name: 'Toko Anggrek', customer: 'PT. Anggrek Pangan Sentosa' }
+        };
+
+        function getSoData() {
+            const soList = JSON.parse(localStorage.getItem('dolfin_so_list') || '[]');
+            const rows = [];
+            soList.forEach(so => {
+                // Resolve store & customer dari semua kemungkinan field name:
+                // - distributor_salesorder.html → storeName, customerName
+                // - retail_POAdd.html → store (= "STR001 - Toko Melati"), customer
+                // - bisa juga hanya punya storeCode → lookup ke STORE_MAP
+                const storeCodeKey = so.storeCode || so.storeKey || '';
+                const masterStore  = STORE_MAP[storeCodeKey];
+
+                const storeLabel    = so.storeName    || so.store
+                                    || (masterStore ? masterStore.name : '')
+                                    || storeCodeKey;
+                const customerLabel = so.customerName || so.customer
+                                    || (masterStore ? masterStore.customer : '')
+                                    || storeLabel;
+
+                (so.lines || []).forEach(line => {
+                    rows.push({
+                        soNo:         so.soNo,
+                        customer:     customerLabel,
+                        store:        storeLabel,
+                        storeCode:    storeCodeKey,
+                        deliveryDate: so.deliveryDate,
+                        slot:         so.slot,
+                        itemCode:     line.itemCode,
+                        itemName:     line.itemName,
+                        qty:          Number(line.qty || 0)
+                    });
+                });
+            });
+            return rows;
+        }
 
         function formatDate(dateStr) {
             if (!dateStr) return '-';
@@ -464,7 +494,7 @@
             const deliveryDate = document.getElementById('deliveryDate').value;
             const slot = document.getElementById('slot').value;
 
-            const filtered = soData.filter(row => {
+            const filtered = getSoData().filter(row => {
                 return row.deliveryDate === deliveryDate && row.slot === slot;
             });
 
@@ -536,24 +566,80 @@
         document.getElementById('btnLoad').addEventListener('click', loadSO);
 
         document.getElementById('btnCreate').addEventListener('click', function () {
-            const allocDateStr = formatDate(document.getElementById('allocationDate').value);
+            const allocationDate = document.getElementById('allocationDate').value;
+            const deliveryDate = document.getElementById('deliveryDate').value;
             const slot = document.getElementById('slot').value;
+            const notes = document.getElementById('notes').value;
+
+            // Re-filter SO data with selected date + slot
+            const filtered = getSoData().filter(row =>
+                row.deliveryDate === deliveryDate && row.slot === slot
+            );
+
+            // Group by itemCode, collect SO rows per item
+            const itemMap = {};
+            filtered.forEach(row => {
+                if (!itemMap[row.itemCode]) {
+                    itemMap[row.itemCode] = {
+                        itemCode: row.itemCode,
+                        itemName: row.itemName,
+                        totalSO: 0,
+                        rows: []
+                    };
+                }
+                itemMap[row.itemCode].totalSO += row.qty;
+                // Merge rows with same SO + item (in case of duplicates)
+                const existing = itemMap[row.itemCode].rows.find(r => r.soNo === row.soNo);
+                if (existing) {
+                    existing.qtySO += row.qty;
+                } else {
+                    itemMap[row.itemCode].rows.push({
+                        soNo:     row.soNo,
+                        customer: row.customer,
+                        store:    row.store,
+                        storeCode: row.storeCode || '',
+                        qtySO:    row.qty
+                    });
+                }
+            });
+
+            const pad2 = n => String(n).padStart(2, '0');
+            const d = new Date(allocationDate + 'T00:00:00');
+            const allocId = 'ALLOC-' + d.getFullYear() + pad2(d.getMonth()+1) + pad2(d.getDate()) + '-' + slot + '-' + String(Date.now()).slice(-3);
+
+            const itemsArr = Object.values(itemMap);
+            const totalQtySO = filtered.reduce((s, r) => s + r.qty, 0);
+
+            // Save full data per-alloc (keyed by allocId)
+            const draft = {
+                allocId,
+                allocationDate,
+                deliveryDate,
+                slot,
+                notes,
+                status: 'DRAFT',
+                items: itemsArr
+            };
+            localStorage.setItem('dolfin_alloc_' + allocId, JSON.stringify(draft));
+
+            // Save/update minimal record in allocations list
             const newAlloc = {
-                id: 'ALLOC-' + new Date().getTime().toString().slice(-6),
-                date: allocDateStr,
-                slot: slot,
-                items: document.getElementById('sumItemCount').textContent,
-                so: document.getElementById('sumQtyLabel').textContent.replace('Total Qty: ', ''),
-                actual: 0,
+                id: allocId,
+                allocationDate,
+                deliveryDate,
+                date: formatDate(allocationDate),
+                slot,
+                itemCount: itemsArr.length,
+                totalQtySO,
+                totalAllocated: 0,
                 status: 'DRAFT',
                 badge: 'badge-draft'
             };
-            
-            let allocations = JSON.parse(sessionStorage.getItem('dolfin_allocations') || '[]');
+            let allocations = JSON.parse(localStorage.getItem('dolfin_allocations') || '[]');
             allocations.unshift(newAlloc);
-            sessionStorage.setItem('dolfin_allocations', JSON.stringify(allocations));
-            
-            window.location.href = 'distributor_allocation_detail_full.html';
+            localStorage.setItem('dolfin_allocations', JSON.stringify(allocations));
+
+            window.location.href = 'distributor_allocation_detail_full.html?id=' + allocId;
         });
 
         document.getElementById('toggleSoDetail').addEventListener('click', function () {
@@ -580,7 +666,7 @@
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -588,7 +674,7 @@
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 

@@ -429,7 +429,10 @@
                                 <th width="220">Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="doTbody">
+                            <tr id="doEmptyRow">
+                                <td colspan="12" style="text-align:center;color:#6b7280;padding:20px;">No delivery documents yet. Click + Add New Delivery to create one.</td>
+                            </tr>
                             <tr>
                                 <td><a href="distributor_DOview.html" class="text-link">DO-202604-0001</a></td>
                                 <td>01-Apr-2026</td>
@@ -598,7 +601,7 @@
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -606,7 +609,7 @@
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
@@ -616,6 +619,62 @@
         document.addEventListener("DOMContentLoaded", () => {
             const sidebar = new SidebarSystem("distributor", "deliveryorder");
             sidebar.render();
+
+            // =========================
+            // LOAD DO LIST
+            // =========================
+            const doList = JSON.parse(localStorage.getItem('dolfin_do_list') || '[]');
+            if (doList.length > 0) {
+                const tbody = document.getElementById('doTbody');
+                document.getElementById('doEmptyRow').remove();
+
+                const badgeMap = {
+                    'DRAFT': 'badge-draft',
+                    'OPEN': 'badge-open',
+                    'PARTIAL': 'badge-partial',
+                    'DELIVERED': 'badge-delivered'
+                };
+                const labelMap = {
+                    'DRAFT': 'Draft', 'OPEN': 'Open',
+                    'PARTIAL': 'Partial Delivered', 'DELIVERED': 'Delivered'
+                };
+
+                doList.forEach(doc => {
+                    const badgeClass = badgeMap[doc.status] || 'badge-draft';
+                    const statusLabel = labelMap[doc.status] || doc.status;
+                    const allocLink = doc.allocId
+                        ? `<a href="distributor_allocation_detail_full.html?id=${doc.allocId}" class="text-link">${doc.allocId}</a>`
+                        : '-';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><a href="distributor_DOview.html?id=${doc.id}" class="text-link">${doc.id}</a></td>
+                        <td>${doc.deliveryDate || '-'}</td>
+                        <td>${allocLink}</td>
+                        <td>${doc.allocDate ? formatDate(doc.allocDate) : '-'}</td>
+                        <td>${doc.slot || '-'}</td>
+                        <td>${doc.customer || '-'}</td>
+                        <td>${doc.store || '-'}</td>
+                        <td>${doc.itemCount ?? '-'}</td>
+                        <td>${doc.totalQtyDO ?? '-'}</td>
+                        <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                        <td>${doc.createdBy || '-'}</td>
+                        <td>
+                            <div class="action-group">
+                                <button class="btn-xs btn-open" onclick="window.location.href='distributor_DOview.html?id=${doc.id}'">Open</button>
+                                ${doc.allocId ? `<button class="btn-xs btn-view" onclick="window.location.href='distributor_allocation_detail_full.html?id=${doc.allocId}'">View Allocation</button>` : ''}
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '-';
+                const d = new Date(dateStr + 'T00:00:00');
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                return `${String(d.getDate()).padStart(2,'0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+            }
         });
     </script>
 </body>

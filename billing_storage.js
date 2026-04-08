@@ -36,11 +36,76 @@
     }
 
     function getReturns() {
-        return JSON.parse(localStorage.getItem(LS_RETURN) || "[]");
+        const stored = JSON.parse(localStorage.getItem(LS_RETURN) || "[]");
+        if (stored.length) return stored;
+        // Seed minimal return data so customer list is available on first load
+        const seed = [
+            {
+                no: "RET-202604-9001", date: "2026-04-06",
+                customer: "Sunrise Bakery Mart", type: "Deduction",
+                grpo: "GRPO-202604-0018", billingRef: "BILL-202604-0001",
+                billingStatus: "Confirmed", qty: 6, amount: 108000,
+                financialTreatment: "Credit Memo Required", status: "Submitted",
+                lines: [{ itemCode: "BRD-001", itemName: "Butter Croissant", returnQty: 6 }]
+            },
+            {
+                no: "RET-202604-9002", date: "2026-04-07",
+                customer: "Sunrise Bakery Mart", type: "Deduction",
+                grpo: "GRPO-202604-0018", billingRef: "BILL-202604-0001",
+                billingStatus: "Confirmed", qty: 4, amount: 72000,
+                financialTreatment: "Credit Memo Required", status: "Approved",
+                lines: [{ itemCode: "BRD-001", itemName: "Butter Croissant", returnQty: 4 }]
+            },
+            {
+                no: "RET-202604-9003", date: "2026-04-10",
+                customer: "Golden Crust Bakery", type: "Deduction",
+                grpo: "GRPO-202604-0019", billingRef: "BILL-202604-0002",
+                billingStatus: "Draft", qty: 3, amount: 43500,
+                financialTreatment: "Direct Billing Reduction", status: "Submitted",
+                lines: [{ itemCode: "BRD-007", itemName: "Chocolate Donut", returnQty: 3 }]
+            }
+        ];
+        localStorage.setItem(LS_RETURN, JSON.stringify(seed));
+        return seed;
     }
 
     function getGrpoList() {
         return loadJson("dolfin_grpo_list", []);
+    }
+
+    function getDoList() {
+        const summary = loadJson("dolfin_do_list", []);
+        return summary.map(item => {
+            const full = loadJson("dolfin_do_" + item.id, null);
+            return full || item;
+        });
+    }
+
+    function getCustomerList() {
+        const set = new Set();
+
+        // From DO list summary — try store first, then customer
+        const doSummary = loadJson("dolfin_do_list", []);
+        doSummary.forEach(d => {
+            if (d.store) set.add(d.store);
+            else if (d.customer) set.add(d.customer);
+        });
+
+        // Also load full DO records to catch any extra fields
+        doSummary.forEach(d => {
+            const full = loadJson("dolfin_do_" + d.id, null);
+            if (!full) return;
+            if (full.store) set.add(full.store);
+            else if (full.customer) set.add(full.customer);
+        });
+
+        // From GRPO records
+        getGrpoList().forEach(g => {
+            if (g.store) set.add(g.store);
+            else if (g.customer) set.add(g.customer);
+        });
+
+        return [...set].sort();
     }
 
     function getCreditMemos() {
@@ -53,7 +118,11 @@
                 && ["Confirmed", "Final", "Posted"].includes(item.billingStatus)
                 && String(item.financialTreatment || "").includes("Credit Memo"))
             .map((item, index) => ({
-                creditMemoNo: item.creditMemoNo || `CM-202604-${String(index + 1).padStart(4, "0")}`,
+                creditMemoNo: item.creditMemoNo || (() => {
+                    const now = new Date();
+                    const period = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
+                    return `CM-${period}-${String(index + 1).padStart(4, "0")}`;
+                })(),
                 creditMemoDate: item.creditMemoDate || item.date || "2026-04-30",
                 customer: item.customer,
                 relatedBillingNo: item.billingRef,
@@ -97,6 +166,7 @@
     }
 
     function priceMapFrom(doc) {
+        // Base fallback prices
         const map = {
             "BRD-001": 18000,
             "BRD-007": 14500,
@@ -104,6 +174,30 @@
             "BRD-013": 9000
         };
 
+        // Lookup active price list from localStorage that matches this billing doc
+        try {
+            const plList = JSON.parse(localStorage.getItem("dolfin_pl_list") || "[]");
+            const customer = doc.customer || "";
+            const billingDate = doc.periodFrom || "";
+
+            // Find best matching price list: Active status, customer matches toko, date in range
+            const matched = plList.filter(pl => {
+                if (pl.status !== "Active") return false;
+                const tokoMatch = !pl.toko || pl.toko === customer;
+                const afterFrom = !pl.validFrom || !billingDate || billingDate >= pl.validFrom;
+                const beforeTo  = !pl.validTo   || !billingDate || billingDate <= pl.validTo;
+                return tokoMatch && afterFrom && beforeTo;
+            });
+
+            // Apply prices from matched price lists (last match wins for same item)
+            matched.forEach(pl => {
+                (pl.items || []).forEach(item => {
+                    if (item.code && item.price) map[item.code] = Number(item.price);
+                });
+            });
+        } catch (e) { /* ignore */ }
+
+        // Override with prices already stored in the doc (highest priority)
         (doc.summaryRows || []).forEach((row) => {
             if (row.itemCode) map[row.itemCode] = Number(row.avgPrice || 0) || map[row.itemCode] || 0;
         });
@@ -117,29 +211,71 @@
         return map;
     }
 
+    function resolveLinkedPL(customer, periodFrom) {
+        try {
+            const plList = JSON.parse(localStorage.getItem("dolfin_pl_list") || "[]");
+            const date = periodFrom || "";
+            const matched = plList.filter(pl => {
+                if (pl.status !== "Active") return false;
+                if (!pl.toko || pl.toko !== customer) return false;
+                const afterFrom = !pl.validFrom || !date || date >= pl.validFrom;
+                const beforeTo  = !pl.validTo   || !date || date <= pl.validTo;
+                return afterFrom && beforeTo;
+            });
+            if (matched.length) return matched[matched.length - 1].plName || "-";
+        } catch (e) { /* ignore */ }
+        return "";
+    }
+
     function buildFromGrpoSource(baseDoc, fallbackDoc, options = {}) {
         const grpos = getGrpoList();
         if (!grpos.length) return recalcBilling(clone(fallbackDoc || baseDoc));
 
-        const preferredCustomer = baseDoc.customer;
+        const preferredStore = baseDoc.customer; // dropdown uses store name
         const selectedGrpoNos = Array.isArray(options.grpoNos) ? options.grpoNos.filter(Boolean) : [];
         const filtered = grpos.filter((grpo) => {
             const selectedMatch = !selectedGrpoNos.length || selectedGrpoNos.includes(grpo.grpoNo);
-            const sameCustomer = !preferredCustomer || (grpo.customer || "") === preferredCustomer;
+            const grpoStore = grpo.store || grpo.customer || "";
+            const sameStore = !preferredStore || grpoStore === preferredStore;
             const afterFrom = !baseDoc.periodFrom || !grpo.grpoDate || grpo.grpoDate >= baseDoc.periodFrom;
             const beforeTo = !baseDoc.periodTo || !grpo.grpoDate || grpo.grpoDate <= baseDoc.periodTo;
-            return selectedMatch && sameCustomer && afterFrom && beforeTo;
+            return selectedMatch && sameStore && afterFrom && beforeTo;
         });
 
         if (!filtered.length) return recalcBilling(clone(fallbackDoc || baseDoc));
         const sourceRows = filtered;
 
-        const firstCustomer = sourceRows[0].customer || baseDoc.customer;
+        const firstCustomer = sourceRows[0].store || sourceRows[0].customer || baseDoc.customer;
         const dates = [...new Set(sourceRows.map(item => item.grpoDate).filter(Boolean))].sort();
         const dateLabels = dates.map(toDisplayDate).map(label => label.slice(0, 6));
         const rowMap = new Map();
-        const returns = getReturns().filter(item => item.billingRef === baseDoc.billingNo);
-        const priceMap = priceMapFrom(fallbackDoc || baseDoc);
+        const returns = getReturns().filter(item => {
+            if (item.billingRef === baseDoc.billingNo) return true;
+            if ((item.customer || "") !== firstCustomer) return false;
+            const retDate = item.date || item.returnDate || "";
+            const afterFrom = !baseDoc.periodFrom || !retDate || retDate >= baseDoc.periodFrom;
+            const beforeTo = !baseDoc.periodTo || !retDate || retDate <= baseDoc.periodTo;
+            return afterFrom && beforeTo;
+        });
+        const priceMap = priceMapFrom(baseDoc);
+
+        // Build DO qty map: { itemCode: { dateISO: doQty } }
+        const doQtyMap = {};
+        const doList = getDoList().filter(doDoc => {
+            const doStore = doDoc.store || doDoc.customer || "";
+            const sameStore = !firstCustomer || doStore === firstCustomer;
+            const afterFrom = !baseDoc.periodFrom || !doDoc.deliveryDate || doDoc.deliveryDate >= baseDoc.periodFrom;
+            const beforeTo = !baseDoc.periodTo || !doDoc.deliveryDate || doDoc.deliveryDate <= baseDoc.periodTo;
+            return sameStore && afterFrom && beforeTo && doDoc.status !== "DRAFT";
+        });
+        doList.forEach(doDoc => {
+            const doDateISO = doDoc.deliveryDate;
+            (doDoc.lines || []).forEach(line => {
+                if (!line.itemCode) return;
+                if (!doQtyMap[line.itemCode]) doQtyMap[line.itemCode] = {};
+                doQtyMap[line.itemCode][doDateISO] = (doQtyMap[line.itemCode][doDateISO] || 0) + Number(line.qtyDO || 0);
+            });
+        });
 
         sourceRows.forEach((grpo) => {
             const dateIndex = dates.indexOf(grpo.grpoDate);
@@ -149,8 +285,8 @@
                     rowMap.set(key, {
                         itemCode: line.itemCode,
                         itemName: line.itemName,
-                        slots: dates.map(() => ({
-                            doQty: 0,
+                        slots: dates.map((dateISO) => ({
+                            doQty: doQtyMap[line.itemCode]?.[dateISO] || 0,
                             grpoQty: 0,
                             returnQty: 0,
                             billingQty: 0,
@@ -161,8 +297,12 @@
 
                 const targetRow = rowMap.get(key);
                 const slot = targetRow.slots[dateIndex];
+                // doQty already set from DO data; only accumulate grpoQty here
+                if (!doQtyMap[line.itemCode]?.[grpo.grpoDate]) {
+                    // fallback: no DO data found, use grpo qty as doQty too
+                    slot.doQty += Number(line.qtyReceived || 0);
+                }
                 const qty = Number(line.qtyReceived || 0);
-                slot.doQty += qty;
                 slot.grpoQty += qty;
                 slot.billingQty += qty;
             });
@@ -437,12 +577,16 @@
     }
 
     function nextBillingNo() {
+        const now = new Date();
+        const period = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}`;
         const docs = getAll();
         const max = docs.reduce((value, doc) => {
-            const current = Number(String(doc.billingNo || "").split("-").pop() || 0);
+            const parts = String(doc.billingNo || "").split("-");
+            if (parts[1] !== period) return value;
+            const current = Number(parts.pop() || 0);
             return Math.max(value, current);
         }, 0);
-        return `BILL-202604-${String(max + 1).padStart(4, "0")}`;
+        return `BILL-${period}-${String(max + 1).padStart(4, "0")}`;
     }
 
     function createDraftTemplate() {
@@ -484,9 +628,12 @@
         createDraftTemplate,
         buildFromGrpoSource,
         getGrpoList,
+        getDoList,
+        getCustomerList,
         nextBillingNo,
         upsertHistory,
         recalcBilling,
-        applyReturnImpact
+        applyReturnImpact,
+        resolveLinkedPL
     };
 })();

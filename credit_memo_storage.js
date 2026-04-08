@@ -22,12 +22,22 @@
         localStorage.setItem(LS_CREDIT_MEMO, JSON.stringify(list));
     }
 
+    function currentPeriod() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        return `${y}${m}`;
+    }
+
     function nextCreditMemoNo(existing) {
+        const period = currentPeriod();
         const max = existing.reduce((value, item) => {
-            const current = Number(String(item.creditMemoNo || "").split("-").pop() || 0);
+            const parts = String(item.creditMemoNo || "").split("-");
+            if (parts[1] !== period) return value;
+            const current = Number(parts.pop() || 0);
             return Math.max(value, current);
         }, 0);
-        return `CM-202604-${String(max + 1).padStart(4, "0")}`;
+        return `CM-${period}-${String(max + 1).padStart(4, "0")}`;
     }
 
     function qualifiesForCreditMemo(ret) {

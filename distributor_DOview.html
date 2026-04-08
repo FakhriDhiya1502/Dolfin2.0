@@ -233,7 +233,7 @@
         .totals {
             margin-top: 14px;
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 220px));
+            grid-template-columns: repeat(2, minmax(0, 220px));
             gap: 12px;
             justify-content: end;
         }
@@ -348,49 +348,49 @@
                 <div class="grid">
                     <div class="field">
                         <label>Delivery No</label>
-                        <input type="text" value="DO-202604-0018" readonly>
+                        <input type="text" id="vDoNo" readonly>
                     </div>
 
                     <div class="field">
                         <label>Delivery Date</label>
-                        <input type="text" value="01-Apr-2026" readonly>
+                        <input type="text" id="vDeliveryDate" readonly>
                     </div>
 
                     <div class="field">
                         <label>Delivery Type</label>
-                        <input type="text" value="Allocation" readonly>
+                        <input type="text" id="vDeliveryType" readonly>
                     </div>
 
                     <div class="field">
                         <label>Status</label>
                         <div class="status-row">
-                            <span class="tag tag-green">Delivered</span>
+                            <span class="tag" id="vStatus">-</span>
                         </div>
                     </div>
 
                     <div class="field">
                         <label>Customer</label>
-                        <input type="text" value="Sunrise Bakery Mart" readonly>
+                        <input type="text" id="vCustomer" readonly>
                     </div>
 
                     <div class="field">
                         <label>Store</label>
-                        <input type="text" value="Sunrise Bakery - BSD Branch" readonly>
+                        <input type="text" id="vStore" readonly>
                     </div>
 
                     <div class="field">
                         <label>Slot</label>
-                        <input type="text" value="AM" readonly>
+                        <input type="text" id="vSlot" readonly>
                     </div>
 
                     <div class="field">
                         <label>Created By</label>
-                        <input type="text" value="Jennie" readonly>
+                        <input type="text" id="vCreatedBy" readonly>
                     </div>
 
                     <div class="field" style="grid-column: span 4;">
                         <label>Remarks</label>
-                        <input type="text" value="Morning delivery for bakery opening stock." readonly>
+                        <input type="text" id="vRemarks" readonly>
                     </div>
                 </div>
             </div>
@@ -408,23 +408,19 @@
                     <div class="summary-grid">
                         <div class="summary-box">
                             <div class="label">Allocation No</div>
-                            <div class="value">ALLOC-202604-0012</div>
+                            <div class="value" id="vAllocNo">-</div>
                         </div>
                         <div class="summary-box">
                             <div class="label">Allocation Date</div>
-                            <div class="value">01-Apr-2026</div>
+                            <div class="value" id="vAllocDate">-</div>
                         </div>
                         <div class="summary-box">
                             <div class="label">Slot</div>
-                            <div class="value">AM</div>
+                            <div class="value" id="vAllocSlot">-</div>
                         </div>
                         <div class="summary-box">
                             <div class="label">Allocation Status</div>
-                            <div class="value"><span class="tag tag-blue">Open</span></div>
-                        </div>
-                        <div class="summary-box">
-                            <div class="label">Allocation Ref</div>
-                            <div class="value">Bakery Daily Batch</div>
+                            <div class="value"><span class="tag tag-blue" id="vAllocStatus">-</span></div>
                         </div>
                     </div>
                 </div>
@@ -437,7 +433,7 @@
             <div class="card-body">
 
                 <div class="detail-note">
-                    Qty DO is based on allocation, but may be adjusted lower or higher as needed.
+                    Detail item information.
                 </div>
 
                 <div class="table-wrap">
@@ -448,48 +444,12 @@
                                 <th>Item Name</th>
                                 <th style="width:100px;">Qty SO</th>
                                 <th style="width:120px;">Qty Allocation</th>
-                                <th style="width:100px;">Qty DO</th>
                                 <th style="width:140px;">Line Status</th>
                                 <th style="width:160px;">Notes</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>BRD-001</td>
-                                <td>Butter Croissant</td>
-                                <td>120</td>
-                                <td>100</td>
-                                <td>100</td>
-                                <td><span class="tag tag-green">Match</span></td>
-                                <td class="text-muted">-</td>
-                            </tr>
-                            <tr>
-                                <td>BRD-007</td>
-                                <td>Chocolate Donut</td>
-                                <td>80</td>
-                                <td>60</td>
-                                <td>70</td>
-                                <td><span class="tag tag-orange">Over Allocation</span></td>
-                                <td class="text-muted">Extra requested by store</td>
-                            </tr>
-                            <tr>
-                                <td>BRD-013</td>
-                                <td>Soft Burger Bun</td>
-                                <td>-</td>
-                                <td>-</td>
-                                <td>20</td>
-                                <td><span class="tag tag-gray">Manual</span></td>
-                                <td class="text-muted">Additional urgent item</td>
-                            </tr>
-                            <tr>
-                                <td>BRD-010</td>
-                                <td>Cheese Danish</td>
-                                <td>50</td>
-                                <td>50</td>
-                                <td>45</td>
-                                <td><span class="tag tag-blue">Below Allocation</span></td>
-                                <td class="text-muted">Adjusted by dispatcher</td>
-                            </tr>
+                        <tbody id="vDetailTbody">
+                            <tr><td colspan="6" style="text-align:center;color:#6b7280;padding:16px;">Loading...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -497,16 +457,13 @@
                 <div class="totals">
                     <div class="total-box">
                         <div class="label">Total Item</div>
-                        <div class="value">4</div>
+                        <div class="value" id="vTotalItem">-</div>
                     </div>
                     <div class="total-box">
                         <div class="label">Total Qty Allocation</div>
-                        <div class="value">210</div>
+                        <div class="value" id="vTotalQtyAlloc">-</div>
                     </div>
-                    <div class="total-box">
-                        <div class="label">Total Qty DO</div>
-                        <div class="value">235</div>
-                    </div>
+
                 </div>
 
                 <div class="footer">
@@ -530,7 +487,7 @@
         // =========================
         // SESSION GUARD
         // =========================
-        const sess = sessionStorage.getItem("dolfin_user");
+        const sess = localStorage.getItem("dolfin_user");
         if (!sess) window.location.href = "login.html?role=distributor";
         const user = JSON.parse(sess);
 
@@ -538,29 +495,110 @@
         document.getElementById("userInfo").textContent = `${user.email} • role=${user.role}`;
 
         document.getElementById("btnLogout").addEventListener("click", () => {
-            sessionStorage.removeItem("dolfin_user");
+            localStorage.removeItem("dolfin_user");
             window.location.href = "index.html";
         });
 
         // =========================
-        // SIDEBAR INJECTION
+        // SIDEBAR INJECTION + LOAD DATA
         // =========================
         document.addEventListener("DOMContentLoaded", () => {
             const sidebar = new SidebarSystem("distributor", "deliveryorder");
             sidebar.render();
+            loadDoView();
         });
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const d = new Date(dateStr + 'T00:00:00');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${String(d.getDate()).padStart(2,'0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+        }
+
+        function loadDoView() {
+            const doId = new URLSearchParams(window.location.search).get('id');
+            if (!doId) {
+                document.getElementById('vDetailTbody').innerHTML =
+                    '<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:16px;">No delivery ID specified.</td></tr>';
+                return;
+            }
+
+            const raw = localStorage.getItem('dolfin_do_' + doId);
+            if (!raw) {
+                document.getElementById('vDetailTbody').innerHTML =
+                    `<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:16px;">Delivery "${doId}" not found.</td></tr>`;
+                return;
+            }
+
+            const doc = JSON.parse(raw);
+
+            // Delivery Information
+            document.getElementById('vDoNo').value = doc.id || '-';
+            document.getElementById('vDeliveryDate').value = formatDate(doc.deliveryDate);
+            document.getElementById('vDeliveryType').value = doc.deliveryType || '-';
+            document.getElementById('vCustomer').value = doc.customer || '-';
+            document.getElementById('vStore').value = doc.store || '-';
+            document.getElementById('vSlot').value = doc.slot || '-';
+            document.getElementById('vCreatedBy').value = doc.createdBy || '-';
+            document.getElementById('vRemarks').value = doc.remarks || '';
+
+            const statusEl = document.getElementById('vStatus');
+            const statusMap = {
+                'DRAFT': ['tag-gray', 'Draft'],
+                'OPEN': ['tag-blue', 'Open'],
+                'PARTIAL': ['tag-orange', 'Partial Delivered'],
+                'DELIVERED': ['tag-green', 'Delivered']
+            };
+            const [cls, label] = statusMap[doc.status] || ['tag-gray', doc.status || '-'];
+            statusEl.className = 'tag ' + cls;
+            statusEl.textContent = label;
+
+            // Allocation Summary
+            const allocCard = document.getElementById('allocSummaryCard');
+            if (doc.allocId) {
+                document.getElementById('vAllocNo').textContent = doc.allocId;
+                document.getElementById('vAllocDate').textContent = formatDate(doc.allocDate);
+                document.getElementById('vAllocSlot').textContent = doc.slot || '-';
+                document.getElementById('vAllocStatus').textContent = 'CONFIRMED';
+            } else {
+                allocCard.style.display = 'none';
+            }
+
+            // Detail lines
+            const tbody = document.getElementById('vDetailTbody');
+            const lines = doc.lines || [];
+            if (lines.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#6b7280;padding:16px;">No items.</td></tr>';
+            } else {
+                const tagMap = {
+                    'Match': 'tag-blue',
+                    'Over Allocation': 'tag-orange',
+                    'Below Allocation': 'tag-blue',
+                    'Manual': 'tag-gray'
+                };
+                tbody.innerHTML = lines.map(l => `
+                    <tr>
+                        <td>${l.itemCode || '-'}</td>
+                        <td>${l.itemName || '-'}</td>
+                        <td>${l.qtySO || '-'}</td>
+                        <td>${l.qtyAlloc || '-'}</td>
+                        <td><span class="tag ${tagMap[l.lineStatus] || 'tag-gray'}">${l.lineStatus || '-'}</span></td>
+                        <td class="text-muted">${l.notes || '-'}</td>
+                    </tr>`).join('');
+            }
+
+            // Totals
+            const totalQtyAlloc = lines.reduce((s, l) => s + (l.qtyAlloc || 0), 0);
+            document.getElementById('vTotalItem').textContent = lines.length;
+            document.getElementById('vTotalQtyAlloc').textContent = totalQtyAlloc || '-';
+        }
 
         function toggleAllocSummary() {
             const content = document.getElementById('allocSummaryContent');
             const chevron = document.getElementById('allocChevron');
-
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                chevron.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                chevron.textContent = '▶';
-            }
+            const isHidden = content.style.display === 'none';
+            content.style.display = isHidden ? 'block' : 'none';
+            chevron.textContent = isHidden ? '▼' : '▶';
         }
     </script>
 </body>
